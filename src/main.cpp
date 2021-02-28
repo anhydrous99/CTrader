@@ -52,6 +52,38 @@ int main() {
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    while(!glfwWindowShouldClose(window)) {
+        // Poll events
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");
+
+            ImGui::Text("This is some usefull text");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::End();
+        }
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
