@@ -10,6 +10,7 @@ find_package(GLEW REQUIRED)
 
 # imgui
 include_directories("extern/imgui/")
+include_directories("extern/imgui/backends")
 file(GLOB ImGui
         "extern/imgui/imgui.cpp"
         "extern/imgui/imgui_draw.cpp"
@@ -17,9 +18,7 @@ file(GLOB ImGui
         "extern/imgui/imgui_tables.cpp"
         "extern/imgui/imgui_widgets.cpp"
         "extern/imgui/backends/imgui_impl_glfw.cpp"
-        "extern/imgui/backends/imgui_impl_opengl3.cpp"
-        "extern/imgui/backends/imgui_impl_glfw.h"
-        "extern/imgui/backends/imgui_impl_opengl3.h")
+        "extern/imgui/backends/imgui_impl_opengl3.cpp")
 include_directories("extern/implot/")
 file(GLOB ImPlot
         "extern/implot/implot.cpp"
