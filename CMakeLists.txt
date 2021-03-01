@@ -7,6 +7,10 @@ find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+add_library(libCTrader libCTrader/Api.cpp libCTrader/Api.h libCTrader/Auth.cpp libCTrader/Auth.h)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto)
 
 # imgui
 include_directories("extern/imgui/")
@@ -26,5 +30,5 @@ file(GLOB ImPlot
         "extern/implot/implot_items.cpp")
 
 include_directories(${OPENGL_INCLUDE_DIR})
-add_executable(CTrader src/main.cpp ${ImGui} ${ImPlot} src/MaxQueue.h)
-target_link_libraries(CTrader cpprestsdk::cpprest OpenGL::GL glfw GLEW::glew)
+add_executable(CTrader src/main.cpp src/MaxQueue.h ${ImGui} ${ImPlot})
+target_link_libraries(CTrader OpenGL::GL glfw GLEW::glew libCTrader)
