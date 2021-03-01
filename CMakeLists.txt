@@ -26,5 +26,5 @@ file(GLOB ImPlot
         "extern/implot/implot_items.cpp")
 
 include_directories(${OPENGL_INCLUDE_DIR})
-add_executable(CTrader src/main.cpp ${ImGui} ${ImPlot})
+add_executable(CTrader src/main.cpp ${ImGui} ${ImPlot} src/MaxQueue.h)
 target_link_libraries(CTrader cpprestsdk::cpprest OpenGL::GL glfw GLEW::glew)
