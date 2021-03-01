@@ -3,15 +3,27 @@ project(CTrader)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Get CPM & CPM packages
+set(CPM_DOWNLOAD_VERSION 0.27.2)
+set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+
+if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+    message(STATUS "Downloading CPM.cmake")
+    file(DOWNLOAD https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
+endif()
+include(${CPM_DOWNLOAD_LOCATION})
+include(cmake/nlohmann_json.cmake)
+include(cmake/glfw3.cmake)
+include(cmake/glew.cmake)
+##
+
 find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto nlohmann_json)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui
@@ -33,4 +45,4 @@ file(GLOB ImPlot
 
 include_directories(${OPENGL_INCLUDE_DIR})
 add_executable(CTrader src/main.cpp src/MaxQueue.h ${ImGui} ${ImPlot})
-target_link_libraries(CTrader OpenGL::GL glfw GLEW::glew libCTrader)
+target_link_libraries(CTrader OpenGL::GL glfw libglew_static libCTrader)
