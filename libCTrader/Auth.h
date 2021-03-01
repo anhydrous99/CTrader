@@ -8,18 +8,18 @@
 #include <string>
 
 class Auth {
+    static std::string b64_decode(const std::string &input);
+    static std::string b64_encode(const std::string &input);
+
 public:
     std::string Key;
     std::string Secret;
     std::string Passphrase;
 
-    std::string Sign(const std::string& time_stamp, const std::string& method, const std::string& path, const std::string& body) const;
-    std::string Sign(const std::string& time_stamp, const std::string& method, const std::string& path) const;
+    [[nodiscard]] std::string Sign(const std::string& time_stamp, const std::string& method, const std::string& path, const std::string& body) const;
+    [[nodiscard]] std::string Sign(const std::string& time_stamp, const std::string& method, const std::string& path) const;
     Auth() = default;
     Auth(std::string key, std::string secret, std::string passphrase);
-
-    static std::string b64_decode(std::string &input);
-    static std::string b64_encode(std::string &input);
 };
 
 

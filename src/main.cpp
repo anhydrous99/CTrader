@@ -2,9 +2,12 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <cstdio>
+#include <iostream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include "Auth.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -94,6 +97,5 @@ int main() {
 
     glfwDestroyWindow(window);
     glfwTerminate();
-
     return 0;
 }

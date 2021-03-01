@@ -9,7 +9,8 @@ find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-add_library(libCTrader libCTrader/Api.cpp libCTrader/Api.h libCTrader/Auth.cpp libCTrader/Auth.h)
+add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp)
+target_include_directories(libCTrader PUBLIC libCTrader)
 target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
