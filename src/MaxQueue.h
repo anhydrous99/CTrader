@@ -46,6 +46,9 @@ public:
     const_reference front();
     const_reference back();
 
+    reference operator[](size_type pos);
+    const_reference operator[](size_type pos) const;
+
 private:
     size_type max_size;
 };
@@ -87,6 +90,16 @@ MaxQueue::const_reference MaxQueue<T>::front() {
 template<typename T>
 MaxQueue::const_reference MaxQueue<T>::back() {
     return queue.back();
+}
+
+template<typename T>
+MaxQueue::reference MaxQueue<T>::operator[](MaxQueue::size_type pos) {
+    return *(begin() + pos);
+}
+
+template<typename T>
+MaxQueue::const_reference MaxQueue<T>::operator[](MaxQueue::size_type pos) const {
+    return *(begin() + pos);
 }
 
 #endif //CTRADER_MAXQUEUE_H
