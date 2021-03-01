@@ -1,7 +1,6 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <cstdio>
 #include <iostream>
 
 #include <GL/glew.h>
@@ -11,7 +10,7 @@
 
 static void glfw_error_callback(int error, const char* description)
 {
-    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+    std::cerr << "Glfw Error " << error << ": " << description << "\n";
 }
 
 
@@ -35,7 +34,7 @@ int main() {
     glfwSwapInterval(1); // Enable vsync
 
     if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        std::cerr << "Failed to initialize OpenGL loader\n";
         return 1;
     }
 
