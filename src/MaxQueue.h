@@ -8,16 +8,16 @@
 #include <queue>
 #include <deque>
 
-template<typename T>
+template<typename T, typename Container=std::deque<T>>
 class SuperQueue : public std::queue<T, Container> {
 public:
     typedef typename Container::iterator iterator;
     typedef typename Container::const_iterator const_iterator;
 
-    iterator begin() { return c.begin(); }
-    iterator end() { return c.end(); }
-    const_iterator cbegin() { return c.cbegin(); }
-    const_iterator cend() { return c.cend(); }
+    iterator begin() { return this->c.begin(); }
+    iterator end() { return this->c.end(); }
+    const_iterator cbegin() { return this->c.cbegin(); }
+    const_iterator cend() { return this->c.cend(); }
 };
 
 template<typename T>
@@ -71,34 +71,34 @@ template<typename T>
 MaxQueue<T>::MaxQueue(MaxQueue::size_type n) : max_size(n) {}
 
 template<typename T>
-MaxQueue::value_type MaxQueue<T>::pop() {
+typename MaxQueue<T>::value_type MaxQueue<T>::pop() {
     value_type v = queue.front();
     queue.pop();
     return v;
 }
 
 template<typename T>
-MaxQueue::size_type MaxQueue<T>::size() {
+typename MaxQueue<T>::size_type MaxQueue<T>::size() {
     return queue.size();
 }
 
 template<typename T>
-MaxQueue::const_reference MaxQueue<T>::front() {
+typename MaxQueue<T>::const_reference MaxQueue<T>::front() {
     return queue.front();
 }
 
 template<typename T>
-MaxQueue::const_reference MaxQueue<T>::back() {
+typename MaxQueue<T>::const_reference MaxQueue<T>::back() {
     return queue.back();
 }
 
 template<typename T>
-MaxQueue::reference MaxQueue<T>::operator[](MaxQueue::size_type pos) {
+typename MaxQueue<T>::reference MaxQueue<T>::operator[](MaxQueue::size_type pos) {
     return *(begin() + pos);
 }
 
 template<typename T>
-MaxQueue::const_reference MaxQueue<T>::operator[](MaxQueue::size_type pos) const {
+typename MaxQueue<T>::const_reference MaxQueue<T>::operator[](MaxQueue::size_type pos) const {
     return *(begin() + pos);
 }
 
