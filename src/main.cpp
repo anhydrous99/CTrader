@@ -25,7 +25,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "CTrader", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -49,8 +49,7 @@ int main() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
+    bool show_performance_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     while(!glfwWindowShouldClose(window)) {
         // Poll events
@@ -61,15 +60,18 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        {
-            static float f = 0.0f;
-            static int counter = 0;
+        // Create top menu
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Show")) {
+                ImGui::Checkbox("Performance", & show_performance_window);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
 
-            ImGui::Begin("Hello, world!");
-
-            ImGui::Text("This is some usefull text");
+        if (show_performance_window) {
+            ImGui::Begin("Performance");
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
             ImGui::End();
         }
 
