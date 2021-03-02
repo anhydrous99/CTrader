@@ -45,5 +45,12 @@ file(GLOB ImPlot
         "extern/implot/implot_items.cpp")
 
 include_directories(${OPENGL_INCLUDE_DIR})
-add_executable(CTrader src/main.cpp src/MaxQueue.h ${ImGui} ${ImPlot})
+add_executable(CTrader
+        src/main.cpp
+        src/MaxQueue.h
+        src/Widgets.h
+        src/Widgets/Performance.cpp
+        src/Widgets/Performance.h
+        ${ImGui}
+        ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static libCTrader)

@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "Widgets.h"
 #include <iostream>
 
 #include <GL/glew.h>
@@ -72,9 +73,7 @@ int main() {
         }
 
         if (show_performance_window) {
-            ImGui::Begin("Performance", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
+            CreatePerformanceWindow();
         }
 
         // Rendering
