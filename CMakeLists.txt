@@ -12,7 +12,6 @@ if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
     file(DOWNLOAD https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
 endif()
 include(${CPM_DOWNLOAD_LOCATION})
-include(cmake/nlohmann_json.cmake)
 include(cmake/glfw3.cmake)
 include(cmake/glew.cmake)
 ##
@@ -23,7 +22,7 @@ find_package(OpenSSL REQUIRED)
 
 add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto nlohmann_json)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui
