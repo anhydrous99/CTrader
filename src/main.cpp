@@ -64,7 +64,7 @@ int main() {
 
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Show")) {
+            if (ImGui::BeginMenu("View")) {
                 ImGui::Checkbox("Performance", & show_performance_window);
                 ImGui::EndMenu();
             }
