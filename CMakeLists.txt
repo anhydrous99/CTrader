@@ -14,6 +14,7 @@ endif()
 include(${CPM_DOWNLOAD_LOCATION})
 include(cmake/glfw3.cmake)
 include(cmake/glew.cmake)
+include(cmake/curl.cmake)
 ##
 
 find_package(cpprestsdk REQUIRED)
@@ -22,7 +23,7 @@ find_package(OpenSSL REQUIRED)
 
 add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui
