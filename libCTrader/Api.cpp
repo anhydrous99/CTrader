@@ -21,7 +21,7 @@ std::string Api::call(const std::string &method, bool authed, const std::string 
         struct curl_slist *chunk = nullptr;
         curl_easy_setopt(curl, CURLOPT_URL, (uri + path).c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str());
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl/1.0");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl/7.75.0");
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         chunk = curl_slist_append(chunk, "Content-Type: application/json");
