@@ -4,9 +4,11 @@
 
 #include "Accounts.h"
 #include "imgui.h"
+#include <algorithm>
 
 Accounts::Accounts(libCTrader::Api *api) : api(api) {
     accounts = api->accounts();
+    sort_accounts();
     selection = &accounts[0];
     selection_ptr = &selection;
     e = 0;
@@ -41,5 +43,12 @@ bool Accounts::display_accounts_window() {
 
 void Accounts::refresh() {
     accounts = api->accounts();
+    sort_accounts();
     selection = &accounts[e];
+}
+
+void Accounts::sort_accounts() {
+    std::sort(accounts.begin(), accounts.end(), [](const libCTrader::Account &a, const libCTrader::Account &b) {
+        return std::stof(a.balance) > std::stof(b.balance);
+    });
 }

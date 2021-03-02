@@ -14,12 +14,13 @@ class Accounts {
     libCTrader::Account *selection;
     int e;
 
+    void refresh();
+    void sort_accounts();
 public:
     explicit Accounts(libCTrader::Api *api);
     std::vector<libCTrader::Account> get_accounts();
     libCTrader::Account **get_selection_ptr();
     bool display_accounts_window();
-    void refresh();
 };
 
 
