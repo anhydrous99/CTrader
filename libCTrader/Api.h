@@ -15,6 +15,10 @@ class Api {
     std::string call(const std::string &method, bool authed, const std::string &path, const std::string &body);
     std::string call(const std::string &method, bool authed, const std::string &path);
     static std::string GetTimestamp();
+
+public:
+    Api(std::string uri, Auth auth);
+    ~Api();
 };
 
 

@@ -4,6 +4,7 @@
 
 #include "Api.h"
 #include <iostream>
+#include <utility>
 #include <curl/curl.h>
 
 /* Used by API::Call to put websource into a string type */
@@ -60,4 +61,12 @@ std::string Api::call(const std::string &method, bool authed, const std::string 
 std::string Api::GetTimestamp() {
     time_t t = time(nullptr);
     return std::to_string(t);
+}
+
+Api::Api(std::string uri, Auth auth): uri(std::move(uri)), auth(std::move(auth)) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+}
+
+Api::~Api() {
+    curl_global_cleanup();
 }
