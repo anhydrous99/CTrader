@@ -5,8 +5,8 @@
 #ifndef CTRADER_SETTINGS_H
 #define CTRADER_SETTINGS_H
 
-#include <Auth.h>
-#include <Api.h>
+#include <libCTrader/Auth.h>
+#include <libCTrader/Api.h>
 
 class Settings {
     bool first = true;

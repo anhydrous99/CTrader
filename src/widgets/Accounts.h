@@ -5,21 +5,18 @@
 #ifndef CTRADER_ACCOUNTS_H
 #define CTRADER_ACCOUNTS_H
 
-#include <Api.h>
+#include <libCTrader/Api.h>
 
 class Accounts {
     libCTrader::Api *api;
     std::vector<libCTrader::Account> accounts;
-    libCTrader::Account **selection_ptr;
-    libCTrader::Account *selection;
-    int e;
+    std::vector<bool> display_account;
 
     void refresh();
     void sort_accounts();
 public:
     explicit Accounts(libCTrader::Api *api);
     std::vector<libCTrader::Account> get_accounts();
-    libCTrader::Account **get_selection_ptr();
     bool display_accounts_window();
 };
 

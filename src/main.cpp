@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Api.h"
+#include <libCTrader/Api.h>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -21,7 +21,6 @@ int main() {
     Settings settings;
     libCTrader::Api *api = settings.get_api();
     Accounts accounts(api);
-    libCTrader::Account **selected = accounts.get_selection_ptr();
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -80,6 +79,7 @@ int main() {
                 ImGui::Checkbox("Settings", & show_settings_window);
                 ImGui::EndMenu();
             }
+            ImGui::Text("|");
             ImGui::EndMainMenuBar();
         }
 
@@ -87,13 +87,11 @@ int main() {
         if (show_performance_window)
             DisplayPerformanceWindow();
         // Show Settings Window
-        if (show_settings_window) {
+        if (show_settings_window)
             show_settings_window = !settings.create_settings_window();
-        }
         // Show accounts window
-        if (show_accounts_window) {
+        if (show_accounts_window)
             show_accounts_window = !accounts.display_accounts_window();
-        }
 
         // Rendering
         ImGui::Render();

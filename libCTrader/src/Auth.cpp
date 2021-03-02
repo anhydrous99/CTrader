@@ -2,7 +2,7 @@
 // Created by Armando Herrera on 3/1/21.
 //
 
-#include "Auth.h"
+#include "libCTrader/Auth.h"
 
 #include <utility>
 #include <iostream>

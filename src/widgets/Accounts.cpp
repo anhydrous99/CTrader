@@ -3,37 +3,35 @@
 //
 
 #include "Accounts.h"
+#include "Account.h"
 #include "imgui.h"
 #include <algorithm>
 
 Accounts::Accounts(libCTrader::Api *api) : api(api) {
     accounts = api->accounts();
+    display_account = std::vector<bool>(accounts.size());
+    std::fill(display_account.begin(), display_account.end(), false);
     sort_accounts();
-    selection = &accounts[0];
-    selection_ptr = &selection;
-    e = 0;
 }
 
 std::vector<libCTrader::Account> Accounts::get_accounts() {
     return accounts;
 }
 
-libCTrader::Account **Accounts::get_selection_ptr() {
-    return selection_ptr;
-}
-
 bool Accounts::display_accounts_window() {
     bool close = false;
-    ImGui::Begin("Accounts");
+    ImGui::Begin("Accounts", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("Currency | Balance");
     for (int i = 0; i < accounts.size(); i++) {
-        ImGui::RadioButton(accounts[i].currency.c_str(), &e, i);
+        if (ImGui::Button(accounts[i].currency.c_str()))
+            display_account[i] = !display_account[i];
         ImGui::SameLine();
-        ImGui::Text("%s", accounts[i].balance.c_str());
+        ImGui::Text("| %s", accounts[i].balance.c_str());
+        if (display_account[i])
+            display_account[i] = !display_account_window(&accounts[i]);
     }
-    if (ImGui::Button("Submit")) {
-        selection = &accounts[e];
+    if (ImGui::Button("Close"))
         close = true;
-    }
     ImGui::SameLine();
     if (ImGui::Button("Refresh"))
         refresh();
@@ -43,8 +41,9 @@ bool Accounts::display_accounts_window() {
 
 void Accounts::refresh() {
     accounts = api->accounts();
+    display_account = std::vector<bool>(accounts.size());
+    std::fill(display_account.begin(), display_account.end(), false);
     sort_accounts();
-    selection = &accounts[e];
 }
 
 void Accounts::sort_accounts() {
