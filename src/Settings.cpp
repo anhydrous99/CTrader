@@ -90,7 +90,7 @@ bool Settings::create_settings_window() {
         close = true;
     }
     ImGui::SameLine();
-    if (ImGui::Button("reset")) {
+    if (ImGui::Button("Reset")) {
         load();
     }
     ImGui::End();
