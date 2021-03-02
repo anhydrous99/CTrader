@@ -97,3 +97,24 @@ void libCTrader::Api::set_auth(libCTrader::Auth *au) {
 void libCTrader::Api::set_uri(std::string u) {
     uri = std::move(u);
 }
+
+libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
+    auto j = json::parse(call("GET", true, "/accounts/" + account_id));
+    return Account(j["id"].get<std::string>(),
+                   j["currency"].get<std::string>(),
+                   j["balance"].get<std::string>(),
+                   j["available"].get<std::string>(),
+                   j["hold"].get<std::string>(),
+                   "",
+                   true);
+}
+
+std::string libCTrader::Api::account_ledger(const std::string &account_id) {
+    auto j = json::parse(call("GET", true, "/accounts/" + account_id + "/ledger"));
+    return j.dump(2); // Make it pretty
+}
+
+std::string libCTrader::Api::account_holds(const std::string &account_id) {
+    auto j = json::parse(call("GET", true, "/accounts/" + account_id + "/holds"));
+    return j.dump(2);
+}
