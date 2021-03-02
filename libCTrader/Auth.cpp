@@ -46,3 +46,15 @@ std::string Auth::b64_encode(const std::string &input) {
         std::cerr << "Error: encode predicted" << pl << " but we got " << ol << std::endl;
     return std::string(output);
 }
+
+void Auth::set_key(const std::string &key) {
+    Key = key;
+}
+
+void Auth::set_secret(const std::string &secret) {
+    Secret = secret;
+}
+
+void Auth::set_passphrase(const std::string &passphrase) {
+    Passphrase = passphrase;
+}

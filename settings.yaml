@@ -1,0 +1,8 @@
+Servers:
+  Rest API: https://api-public.sandbox.pro.coinbase.com
+  Websocket Feed: wss://ws-feed-public.sandbox.pro.coinbase.com
+  Fix API: tcp+ssl://fix-public.sandbox.pro.coinbase.com:4198
+Authentication:
+  Key: 86ba7cc41c63e8703f5204741d3daeee
+  Secret: kAbDfhW0tNer94bLNKDDS2W21O9xtkn5pRa9LeiGy+TeeP5mgNNNxcALJQ47CHo0U5wbK7HxWCI/z+vHh1o2jw==
+  Passphrase: msr63p109q

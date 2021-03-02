@@ -13,6 +13,7 @@ if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
 endif()
 include(${CPM_DOWNLOAD_LOCATION})
 include(cmake/nlohmann_json.cmake)
+include(cmake/yaml_cpp.cmake)
 include(cmake/glfw3.cmake)
 include(cmake/glew.cmake)
 include(cmake/curl.cmake)
@@ -48,9 +49,12 @@ include_directories(${OPENGL_INCLUDE_DIR})
 add_executable(CTrader
         src/main.cpp
         src/MaxQueue.h
+        src/Settings.cpp
+        src/Settings.h
         src/Widgets.h
         src/Widgets/Performance.cpp
         src/Widgets/Performance.h
         ${ImGui}
         ${ImPlot})
-target_link_libraries(CTrader OpenGL::GL glfw libglew_static libCTrader)
+target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
+configure_file(${CMAKE_SOURCE_DIR}/settings.yaml ${CMAKE_BINARY_DIR}/settings.yaml COPYONLY)

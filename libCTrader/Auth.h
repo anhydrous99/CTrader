@@ -20,6 +20,10 @@ public:
     [[nodiscard]] std::string Sign(const std::string& time_stamp, const std::string& method, const std::string& path) const;
     Auth() = default;
     Auth(std::string key, std::string secret, std::string passphrase);
+
+    void set_key(const std::string &key);
+    void set_secret(const std::string &secret);
+    void set_passphrase(const std::string &passphrase);
 };
 
 

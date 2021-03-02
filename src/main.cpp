@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "Settings.h"
 #include "Widgets.h"
 #include <iostream>
 
@@ -16,6 +17,9 @@ static void glfw_error_callback(int error, const char* description)
 
 
 int main() {
+    // Get settings
+    Settings settings;
+
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -53,6 +57,7 @@ int main() {
 
     // Our state
     bool show_performance_window = false;
+    bool show_settings_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     while(!glfwWindowShouldClose(window)) {
         // Poll events
@@ -67,13 +72,20 @@ int main() {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
                 ImGui::Checkbox("Performance", & show_performance_window);
+                ImGui::Checkbox("Settings", & show_settings_window);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
 
-        if (show_performance_window) {
+        // Show performance window
+        if (show_performance_window)
             CreatePerformanceWindow();
+        // Show Settings Window
+        if (show_settings_window) {
+            if (settings.create_settings_window()) { // If submit button pressed, close window
+                show_settings_window = false;
+            }
         }
 
         // Rendering
