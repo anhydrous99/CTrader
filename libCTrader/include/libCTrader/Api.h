@@ -28,7 +28,7 @@ namespace libCTrader {
 
         std::vector<Account> accounts();
         Account account(const std::string& account_id);
-        std::string account_ledger(const std::string& account_id);
+        std::vector<Account_Ledger_Entry> account_ledger(const std::string& account_id);
         std::string account_holds(const std::string& account_id);
     };
 }

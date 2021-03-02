@@ -28,7 +28,7 @@ bool Accounts::display_accounts_window() {
         ImGui::SameLine();
         ImGui::Text("| %s", accounts[i].balance.c_str());
         if (display_account[i])
-            display_account[i] = !display_account_window(&accounts[i]);
+            display_account[i] = !display_account_window(&accounts[i], api);
     }
     if (ImGui::Button("Close"))
         close = true;

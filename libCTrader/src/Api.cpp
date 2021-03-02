@@ -109,9 +109,18 @@ libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
                    true);
 }
 
-std::string libCTrader::Api::account_ledger(const std::string &account_id) {
+std::vector<libCTrader::Account_Ledger_Entry> libCTrader::Api::account_ledger(const std::string &account_id) {
     auto j = json::parse(call("GET", true, "/accounts/" + account_id + "/ledger"));
-    return j.dump(2); // Make it pretty
+    std::vector<Account_Ledger_Entry> ledger;
+    for (const auto& j_e : j) {
+        ledger.emplace_back(
+                j_e["id"],
+                j_e["created_at"],
+                j_e["amount"],
+                j_e["balance"],
+                j_e["type"]);
+    }
+    return ledger;
 }
 
 std::string libCTrader::Api::account_holds(const std::string &account_id) {
