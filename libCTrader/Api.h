@@ -6,11 +6,15 @@
 #define CTRADER_API_H
 
 #include <string>
+#include "Auth.h"
 
 class Api {
+    Auth auth;
+    std::string uri;
+
     std::string call(const std::string &method, bool authed, const std::string &path, const std::string &body);
     std::string call(const std::string &method, bool authed, const std::string &path);
-
+    static std::string GetTimestamp();
 };
 
 
