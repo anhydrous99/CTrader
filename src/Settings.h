@@ -6,6 +6,7 @@
 #define CTRADER_SETTINGS_H
 
 #include <Auth.h>
+#include <Api.h>
 
 class Settings {
     bool first = true;
@@ -13,7 +14,9 @@ class Settings {
     std::string api_uri;
     std::string ws_uri;
     std::string fix_uri;
-    Auth auth;
+    libCTrader::Auth auth;
+    libCTrader::Api api;
+    void load();
 
 public:
     Settings();
@@ -21,7 +24,8 @@ public:
     std::string get_api_uri();
     std::string get_websocket_uri();
     std::string get_fix_uri();
-    Auth get_authentication();
+    libCTrader::Auth *get_authentication();
+    libCTrader::Api *get_api();
 
     bool create_settings_window();
     bool settings_have_changed();

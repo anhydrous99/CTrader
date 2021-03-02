@@ -8,18 +8,10 @@
 #include "imgui.h"
 #include "Settings.h"
 
-Settings::Settings() {
-    YAML::Node settings = YAML::LoadFile("settings.yaml");
-    auto servers = settings["Servers"];
-    api_uri = servers["Rest API"].as<std::string>();
-    ws_uri = servers["Websocket Feed"].as<std::string>();
-    fix_uri = servers["Fix API"].as<std::string>();
-
-    auto authentication = settings["Authentication"];
-    auth = Auth(
-            authentication["Key"].as<std::string>(),
-            authentication["Secret"].as<std::string>(),
-            authentication["Passphrase"].as<std::string>());
+Settings::Settings() : api("", nullptr) {
+    load();
+    api.set_uri(api_uri);
+    api.set_auth(&auth);
 }
 
 std::string Settings::get_api_uri() {
@@ -34,8 +26,12 @@ std::string Settings::get_fix_uri() {
     return fix_uri;
 }
 
-Auth Settings::get_authentication() {
-    return auth;
+libCTrader::Auth *Settings::get_authentication() {
+    return &auth;
+}
+
+libCTrader::Api *Settings::get_api() {
+    return &api;
 }
 
 bool Settings::create_settings_window() {
@@ -78,6 +74,8 @@ bool Settings::create_settings_window() {
         auth.set_secret(std::string(secret_char));
         auth.set_passphrase(std::string(passphrase_char));
 
+        api.set_uri(api_uri);
+
         YAML::Node settings = YAML::LoadFile("settings.yaml");
         settings["Servers"]["Rest API"] = api_uri;
         settings["Servers"]["Websocket Feed"] = ws_uri;
@@ -91,6 +89,10 @@ bool Settings::create_settings_window() {
         settings_file.close();
         close = true;
     }
+    ImGui::SameLine();
+    if (ImGui::Button("reset")) {
+        load();
+    }
     ImGui::End();
     return close;
 }
@@ -101,4 +103,21 @@ bool Settings::settings_have_changed() {
         return true;
     }
     return false;
+}
+
+void Settings::load() {
+    YAML::Node settings = YAML::LoadFile("settings.yaml");
+    auto servers = settings["Servers"];
+    api_uri = servers["Rest API"].as<std::string>();
+    ws_uri = servers["Websocket Feed"].as<std::string>();
+    fix_uri = servers["Fix API"].as<std::string>();
+
+    api.set_uri(api_uri);
+
+    auto authentication = settings["Authentication"];
+    auth.set_key(authentication["Key"].as<std::string>());
+    auth.set_secret(authentication["Secret"].as<std::string>());
+    auth.set_passphrase(authentication["Passphrase"].as<std::string>());
+
+    first = true;
 }

@@ -6,6 +6,9 @@
 #include <iostream>
 #include <utility>
 #include <curl/curl.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 /* Used by API::Call to put websource into a string type */
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -13,7 +16,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
     return size * nmemb;
 }
 
-std::string Api::call(const std::string &method, bool authed, const std::string &path, const std::string &body) {
+std::string libCTrader::Api::call(const std::string &method, bool authed, const std::string &path, const std::string &body) {
     CURL *curl;
     CURLcode res;
     std::string readBuffer;
@@ -28,11 +31,11 @@ std::string Api::call(const std::string &method, bool authed, const std::string 
         chunk = curl_slist_append(chunk, "Content-Type: application/json");
         if (authed) {
             std::string time_stamp = GetTimestamp();
-            std::string sign = auth.Sign(time_stamp, method, path, body);
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-KEY: " + auth.Key).c_str());
+            std::string sign = auth->Sign(time_stamp, method, path, body);
+            chunk = curl_slist_append(chunk, ("CB-ACCESS-KEY: " + auth->Key).c_str());
             chunk = curl_slist_append(chunk, ("CB-ACCESS-SIGN: " + sign).c_str());
             chunk = curl_slist_append(chunk, ("CB-ACCESS-TIMESTAMP: " + time_stamp).c_str());
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-PASSPHRASE: " + auth.Passphrase).c_str());
+            chunk = curl_slist_append(chunk, ("CB-ACCESS-PASSPHRASE: " + auth->Passphrase).c_str());
         }
         res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
         if (method == "POST") {
@@ -54,19 +57,43 @@ std::string Api::call(const std::string &method, bool authed, const std::string 
     return readBuffer;
 }
 
-std::string Api::call(const std::string &method, bool authed, const std::string &path) {
+std::string libCTrader::Api::call(const std::string &method, bool authed, const std::string &path) {
     return call(method, authed, path, "");
 }
 
-std::string Api::GetTimestamp() {
+std::string libCTrader::Api::GetTimestamp() {
     time_t t = time(nullptr);
     return std::to_string(t);
 }
 
-Api::Api(std::string uri, Auth auth): uri(std::move(uri)), auth(std::move(auth)) {
+libCTrader::Api::Api(std::string uri, Auth *auth): uri(std::move(uri)), auth(auth) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
-Api::~Api() {
+libCTrader::Api::~Api() {
     curl_global_cleanup();
+}
+
+std::vector<libCTrader::Account> libCTrader::Api::accounts() {
+    auto j = json::parse(call("GET", true, "/accounts"));
+    std::vector<Account> accounts;
+    for (const auto& acc : j) {
+        accounts.emplace_back(
+                acc["id"].get<std::string>(),
+                acc["currency"].get<std::string>(),
+                acc["balance"].get<std::string>(),
+                acc["available"].get<std::string>(),
+                acc["hold"].get<std::string>(),
+                acc["profile_id"].get<std::string>(),
+                acc["trading_enabled"].get<bool>());
+    }
+    return accounts;
+}
+
+void libCTrader::Api::set_auth(libCTrader::Auth *au) {
+    auth = au;
+}
+
+void libCTrader::Api::set_uri(std::string u) {
+    uri = std::move(u);
 }

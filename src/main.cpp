@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Auth.h"
+#include "Api.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -19,6 +19,9 @@ static void glfw_error_callback(int error, const char* description)
 int main() {
     // Get settings
     Settings settings;
+    libCTrader::Api *api = settings.get_api();
+    Accounts accounts(api);
+    libCTrader::Account **selected = accounts.get_selection_ptr();
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -56,6 +59,7 @@ int main() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
+    bool show_accounts_window = false;
     bool show_performance_window = false;
     bool show_settings_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -71,6 +75,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("Accounts", & show_accounts_window);
                 ImGui::Checkbox("Performance", & show_performance_window);
                 ImGui::Checkbox("Settings", & show_settings_window);
                 ImGui::EndMenu();
@@ -80,12 +85,14 @@ int main() {
 
         // Show performance window
         if (show_performance_window)
-            CreatePerformanceWindow();
+            DisplayPerformanceWindow();
         // Show Settings Window
         if (show_settings_window) {
-            if (settings.create_settings_window()) { // If submit button pressed, close window
-                show_settings_window = false;
-            }
+            show_settings_window = !settings.create_settings_window();
+        }
+        // Show accounts window
+        if (show_accounts_window) {
+            show_accounts_window = !accounts.display_accounts_window();
         }
 
         // Rendering

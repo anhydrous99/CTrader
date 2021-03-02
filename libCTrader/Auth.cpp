@@ -9,7 +9,7 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 
-std::string Auth::Sign(const std::string &time_stamp, const std::string &method, const std::string &path,
+std::string libCTrader::Auth::Sign(const std::string &time_stamp, const std::string &method, const std::string &path,
                        const std::string &body) const {
     std::string message = time_stamp + method + path + body;
     std::string secret = b64_decode(Secret);
@@ -21,14 +21,14 @@ std::string Auth::Sign(const std::string &time_stamp, const std::string &method,
     return b64_encode(signature);
 }
 
-std::string Auth::Sign(const std::string &time_stamp, const std::string &method, const std::string &path) const {
+std::string libCTrader::Auth::Sign(const std::string &time_stamp, const std::string &method, const std::string &path) const {
     return Sign(time_stamp, method, path, "");
 }
 
-Auth::Auth(std::string key, std::string secret, std::string passphrase) : Key(std::move(key)),
+libCTrader::Auth::Auth(std::string key, std::string secret, std::string passphrase) : Key(std::move(key)),
     Secret(std::move(secret)), Passphrase(std::move(passphrase)) {}
 
-std::string Auth::b64_decode(const std::string &input) {
+std::string libCTrader::Auth::b64_decode(const std::string &input) {
     const auto pl = 3 * input.size() / 4;
     auto output = reinterpret_cast<unsigned char *>(calloc(pl+1, 1));
     const auto ol = EVP_DecodeBlock(output, reinterpret_cast<const unsigned char *>(input.c_str()), input.size());
@@ -37,7 +37,7 @@ std::string Auth::b64_decode(const std::string &input) {
     return std::string(reinterpret_cast<const char *>(output));
 }
 
-std::string Auth::b64_encode(const std::string &input) {
+std::string libCTrader::Auth::b64_encode(const std::string &input) {
     const auto pl = 4 * ((input.size() + 2) / 3);
     auto output = reinterpret_cast<char *>(calloc(pl + 1, 1));
     const auto ol = EVP_EncodeBlock(reinterpret_cast<unsigned char *>(output),
@@ -47,14 +47,14 @@ std::string Auth::b64_encode(const std::string &input) {
     return std::string(output);
 }
 
-void Auth::set_key(const std::string &key) {
+void libCTrader::Auth::set_key(const std::string &key) {
     Key = key;
 }
 
-void Auth::set_secret(const std::string &secret) {
+void libCTrader::Auth::set_secret(const std::string &secret) {
     Secret = secret;
 }
 
-void Auth::set_passphrase(const std::string &passphrase) {
+void libCTrader::Auth::set_passphrase(const std::string &passphrase) {
     Passphrase = passphrase;
 }

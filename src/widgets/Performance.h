@@ -6,6 +6,6 @@
 #define CTRADER_PERFORMANCE_H
 
 
-void CreatePerformanceWindow();
+void DisplayPerformanceWindow();
 
 #endif //CTRADER_PERFORMANCE_H

@@ -23,7 +23,7 @@ find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp)
+add_library(libCTrader libCTrader/Api.cpp libCTrader/Auth.cpp libCTrader/types.h libCTrader/types.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader)
 target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
@@ -52,8 +52,10 @@ add_executable(CTrader
         src/Settings.cpp
         src/Settings.h
         src/Widgets.h
-        src/Widgets/Performance.cpp
-        src/Widgets/Performance.h
+        src/widgets/Performance.cpp
+        src/widgets/Performance.h
+        src/widgets/Accounts.cpp
+        src/widgets/Accounts.h
         ${ImGui}
         ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
