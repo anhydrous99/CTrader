@@ -61,8 +61,10 @@ int main() {
 
     // Our state
     bool show_accounts_window = false;
+    bool show_product_info_window = false;
     bool show_performance_window = false;
     bool show_settings_window = false;
+
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     while(!glfwWindowShouldClose(window)) {
@@ -78,6 +80,7 @@ int main() {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
                 ImGui::Checkbox("Accounts", & show_accounts_window);
+                ImGui::Checkbox("Product Info", & show_product_info_window);
                 ImGui::Checkbox("Performance", & show_performance_window);
                 ImGui::Checkbox("Settings", & show_settings_window);
                 ImGui::EndMenu();
@@ -97,6 +100,9 @@ int main() {
         // Show performance window
         if (show_performance_window)
             DisplayPerformanceWindow();
+        // Show product info window
+        if (show_product_info_window)
+            show_product_info_window = !DisplayProductInfoWindow(products);
         // Show Settings Window
         if (show_settings_window)
             show_settings_window = !settings.create_settings_window();

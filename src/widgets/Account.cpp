@@ -25,7 +25,7 @@ bool display_account_ledger_window(const std::string &id, const std::string &cur
         ImGui::Text("Balance");
         ImGui::TableSetColumnIndex(4);
         ImGui::Text("Type");
-        for (auto & row : entry) {
+        for (const auto & row : entry) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("%s", row.id.c_str());
