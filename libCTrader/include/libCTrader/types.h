@@ -69,6 +69,30 @@ namespace libCTrader {
              std::string status,
              bool settled);
     };
+
+    struct Fill {
+        std::string trade_id;
+        std::string product_id;
+        std::string price;
+        std::string size;
+        std::string order_id;
+        std::string created_at;
+        std::string liquidity;
+        std::string fee;
+        bool settled;
+        std::string side;
+
+        Fill(std::string trade_id,
+             std::string product_id,
+             std::string price,
+             std::string size,
+             std::string order_id,
+             std::string created_at,
+             std::string liquidity,
+             std::string fee,
+             bool settled,
+             std::string side);
+    };
 }
 
 #endif //CTRADER_TYPES_H

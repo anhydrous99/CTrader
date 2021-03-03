@@ -313,3 +313,32 @@ libCTrader::Order libCTrader::Api::get_order(const std::string &order_id) {
             j["settled"]
     };
 }
+
+std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *order_id, const std::string *product_id) {
+    std::map<std::string, std::string> args;
+    if (order_id != nullptr)
+        args["order_id"] = *order_id;
+    if (product_id != nullptr)
+        args["product_id"] = *product_id;
+    std::string path = "/fills" + build_url_args(args);
+    auto json = json::parse(call("GET", true, path));
+    std::vector<Fill> fills;
+    for (const auto& j : json) {
+        fills.emplace_back(
+                j["trade_id"],
+                j["product_id"],
+                j["price"],
+                j["size"],
+                j["order_id"],
+                j["created_at"],
+                j["liquidity"],
+                j["fee"],
+                j["settled"],
+                j["side"]);
+    }
+    return fills;
+}
+
+std::string libCTrader::Api::exchange_limits() {
+    return call("GET", true, "/users/self/exchange-limits");
+}

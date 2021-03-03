@@ -41,6 +41,8 @@ namespace libCTrader {
         void cancel_all_orders(const std::string *product_id=nullptr);
         std::vector<Order> list_orders(const std::string *status=nullptr, const std::string *product_id=nullptr);
         Order get_order(const std::string &order_id);
+        std::vector<Fill> list_fills(const std::string* order_id=nullptr, const std::string* product_id=nullptr);
+        std::string exchange_limits();
     };
 }
 
