@@ -93,6 +93,43 @@ namespace libCTrader {
              bool settled,
              std::string side);
     };
+
+    struct Product {
+        std::string id;
+        std::string display_name;
+        std::string base_currency;
+        std::string quote_currency;
+        std::string base_increment;
+        std::string quote_increment;
+        std::string base_min_size;
+        std::string base_max_size;
+        std::string min_market_funds;
+        std::string max_market_funds;
+        std::string status;
+        std::string status_messages;
+        bool cancel_only;
+        bool limit_only;
+        bool post_only;
+        bool trading_disabled;
+
+        Product(std::string id,
+                std::string display_name,
+                std::string base_currency,
+                std::string quote_currency,
+                std::string base_increment,
+                std::string quote_increment,
+                std::string base_min_size,
+                std::string base_max_size,
+                std::string min_market_funds,
+                std::string max_market_funds,
+                std::string status,
+                std::string status_messages,
+                bool cancel_only,
+                bool limit_only,
+                bool post_only,
+                bool trading_disabled
+                );
+    };
 }
 
 #endif //CTRADER_TYPES_H

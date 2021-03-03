@@ -342,3 +342,51 @@ std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *ord
 std::string libCTrader::Api::exchange_limits() {
     return call("GET", true, "/users/self/exchange-limits");
 }
+
+std::vector<libCTrader::Product> libCTrader::Api::get_products() {
+    json json1 = json::parse(call("GET", false, "/products"));
+    std::vector<Product> products;
+    for (const auto& j : json1) {
+        products.emplace_back(
+                j["id"],
+                j["display_name"],
+                j["base_currency"],
+                j["quote_currency"],
+                j["base_increment"],
+                j["quote_increment"],
+                j["base_min_size"],
+                j["base_max_size"],
+                j["min_market_funds"],
+                j["max_market_funds"],
+                j["status"],
+                j["status_message"],
+                j["cancel_only"],
+                j["limit_only"],
+                j["post_only"],
+                j["trading_disabled"]
+                );
+    }
+    return products;
+}
+
+libCTrader::Product libCTrader::Api::get_product(const std::string &product_id) {
+    json j = json::parse(call("GET", false, "/products/" + product_id));
+    return {
+            j["id"],
+            j["display_name"],
+            j["base_currency"],
+            j["quote_currency"],
+            j["base_increment"],
+            j["quote_increment"],
+            j["base_min_size"],
+            j["base_max_size"],
+            j["min_market_funds"],
+            j["max_market_funds"],
+            j["status"],
+            j["status_message"],
+            j["cancel_only"],
+            j["limit_only"],
+            j["post_only"],
+            j["trading_disabled"]
+    };
+}

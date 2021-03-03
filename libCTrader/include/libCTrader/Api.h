@@ -43,6 +43,10 @@ namespace libCTrader {
         Order get_order(const std::string &order_id);
         std::vector<Fill> list_fills(const std::string* order_id=nullptr, const std::string* product_id=nullptr);
         std::string exchange_limits();
+
+        // Public API
+        std::vector<Product> get_products();
+        Product get_product(const std::string &product_id);
     };
 }
 
