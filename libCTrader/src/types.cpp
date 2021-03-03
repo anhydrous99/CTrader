@@ -60,7 +60,7 @@ libCTrader::Order::Order(std::string id,
                          status(std::move(status)),
                          settled(settled) {}
 
-libCTrader::Fill::Fill(std::string trade_id,
+libCTrader::Fill::Fill(int trade_id,
                        std::string product_id,
                        std::string price,
                        std::string size,
@@ -70,7 +70,7 @@ libCTrader::Fill::Fill(std::string trade_id,
                        std::string fee,
                        bool settled,
                        std::string side) :
-                       trade_id(std::move(trade_id)),
+                       trade_id(trade_id),
                        product_id(std::move(product_id)),
                        price(std::move(price)),
                        size(std::move(size)),
@@ -113,3 +113,21 @@ libCTrader::Product::Product(std::string id,
                              limit_only(limit_only),
                              post_only(post_only),
                              trading_disabled(trading_disabled) {}
+
+libCTrader::Page::Page(std::string price, std::string size, std::string side, int num_orders) :
+    price(std::move(price)), size(std::move(size)), side(std::move(side)), num_orders(num_orders) {}
+
+libCTrader::PageLVL3::PageLVL3(std::string price, std::string size, std::string side, std::string order_id) :
+    price(std::move(price)), size(std::move(size)), side(std::move(side)), order_id(std::move(order_id)) {}
+
+libCTrader::Ticker::Ticker(int trade_id, std::string price, std::string size, std::string time,
+                           std::string bid, std::string ask, std::string volume) :
+                                           trade_id(trade_id), price(std::move(price)), size(std::move(size)),
+                                           time(std::move(time)), bid(std::move(bid)), ask(std::move(ask)),
+                                           volume(std::move(volume)) {}
+
+libCTrader::Trade::Trade(std::string time, int trade_id, std::string price, std::string size, std::string side) :
+    time(std::move(time)), trade_id(trade_id), price(std::move(price)), size(std::move(size)), side(std::move(side)) {}
+
+libCTrader::Candle::Candle(uint64_t time, float low, float high, float open, float close, float volume):
+    time(time), low(low), high(high), open(open), close(close), volume(volume) {}

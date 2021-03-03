@@ -6,6 +6,7 @@
 #define CTRADER_TYPES_H
 
 #include <string>
+#include <cinttypes>
 
 namespace libCTrader {
     struct Account {
@@ -71,7 +72,7 @@ namespace libCTrader {
     };
 
     struct Fill {
-        std::string trade_id;
+        int trade_id;
         std::string product_id;
         std::string price;
         std::string size;
@@ -82,7 +83,7 @@ namespace libCTrader {
         bool settled;
         std::string side;
 
-        Fill(std::string trade_id,
+        Fill(int trade_id,
              std::string product_id,
              std::string price,
              std::string size,
@@ -129,6 +130,60 @@ namespace libCTrader {
                 bool post_only,
                 bool trading_disabled
                 );
+    };
+
+    struct Page {
+        std::string price;
+        std::string size;
+        std::string side;
+        int num_orders = 0;
+
+        Page(std::string price, std::string size, std::string side, int num_orders);
+        Page() = default;
+    };
+
+    struct PageLVL3 {
+        std::string price;
+        std::string size;
+        std::string side;
+        std::string order_id;
+
+        PageLVL3(std::string price, std::string size, std::string side, std::string order_id);
+        PageLVL3() = default;
+    };
+
+    struct Ticker {
+        int trade_id;
+        std::string price;
+        std::string size;
+        std::string time;
+        std::string bid;
+        std::string ask;
+        std::string volume;
+
+        Ticker(int trade_id, std::string price, std::string size, std::string time, std::string bid,
+               std::string ask, std::string volume);
+    };
+
+    struct Trade {
+        std::string time;
+        int trade_id;
+        std::string price;
+        std::string size;
+        std::string side;
+
+        Trade(std::string time, int trade_id, std::string price, std::string size, std::string side);
+    };
+
+    struct Candle {
+        uint64_t time;
+        float low;
+        float high;
+        float open;
+        float close;
+        float volume;
+
+        Candle(uint64_t time, float low, float high, float open, float close, float volume);
     };
 }
 

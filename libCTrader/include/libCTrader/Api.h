@@ -47,6 +47,13 @@ namespace libCTrader {
         // Public API
         std::vector<Product> get_products();
         Product get_product(const std::string &product_id);
+        std::map<std::string, Page> get_order_book(const std::string &product_id, int level=1);
+        std::map<std::string, PageLVL3> get_lvl3_order_book(const std::string &product_id);
+        Ticker get_product_ticker(const std::string &product_id);
+        std::vector<Trade> list_latest_trades(const std::string &product_id);
+        std::vector<Candle> get_historical_candles(const std::string &product_id, const std::string &start,
+                                                 const std::string &end, int granularity);
+        std::string get_24hr_stats(const std::string &product_id);
     };
 }
 

@@ -390,3 +390,74 @@ libCTrader::Product libCTrader::Api::get_product(const std::string &product_id) 
             j["trading_disabled"]
     };
 }
+
+std::map<std::string, libCTrader::Page> libCTrader::Api::get_order_book(const std::string &product_id, int level) {
+    json j = json::parse(call("GET", false,
+                              "/products/" + product_id + "/book?level=" + std::to_string(level)));
+    std::map<std::string, Page> output;
+    auto bids = j["bids"];
+    auto asks = j["asks"];
+    for (const auto& bid : bids) {
+        output[bid[0].get<std::string>()] = {bid[0], bid[1], "bids", bid[3]};
+    }
+    for (const auto& ask : asks)
+        output[ask[0].get<std::string>()] = {ask[0], ask[1], "asks", ask[3]};
+    return output;
+}
+
+std::map<std::string, libCTrader::PageLVL3> libCTrader::Api::get_lvl3_order_book(const std::string &product_id) {
+    json j = json::parse(call("GET", false,
+                              "/products/" + product_id + "/book?level=3"));
+    std::map<std::string, PageLVL3> output;
+    auto bids = j["bids"];
+    auto asks = j["asks"];
+    for (const auto& bid : bids)
+        output[bid[0].get<std::string>()] = {bid[0], bid[1], "bids", bid[3]};
+    for (const auto& ask : asks)
+        output[ask[0].get<std::string>()] = {ask[0], ask[1], "asks", ask[3]};
+    return output;
+}
+
+libCTrader::Ticker libCTrader::Api::get_product_ticker(const std::string &product_id) {
+    json j = json::parse(call("GET", false, "/products/" + product_id + "/ticker"));
+    return {
+        j["trade_id"],
+        j["price"],
+        j["size"],
+        j["bid"],
+        j["ask"],
+        j["volume"],
+        j["time"]
+    };
+}
+
+std::vector<libCTrader::Trade> libCTrader::Api::list_latest_trades(const std::string &product_id) {
+    json json1 = json::parse(call("GET", false, "/products" + product_id + "/products"));
+    std::vector<Trade> output;
+    for (const auto& j : json1) {
+        output.emplace_back(
+                j["time"],
+                j["trade_id"],
+                j["price"],
+                j["size"],
+                j["side"]
+                );
+    }
+    return output;
+}
+
+std::vector<libCTrader::Candle>
+libCTrader::Api::get_historical_candles(const std::string &product_id, const std::string &start, const std::string &end,
+                                      int granularity) {
+    std::string path = "/products/" + product_id + "/candles?start=" + start + "&end=" + end + "&granularity=" +
+            std::to_string(granularity);
+    json json1 = json::parse(call("GET", false, path));
+    std::vector<Candle> candles;
+    for (const auto& j : json1)
+        candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
+    return candles;
+}
+
+std::string libCTrader::Api::get_24hr_stats(const std::string &product_id) {
+    return call("GET", false, "/products/" + product_id + "/stats");
+}
