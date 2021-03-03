@@ -31,6 +31,44 @@ namespace libCTrader {
         Account_Ledger_Entry(std::string id, std::string created_at, std::string amount, std::string balance,
                              std::string type);
     };
+
+    struct Order {
+        std::string id;
+        std::string price;
+        std::string size;
+        std::string product_id;
+        std::string side;
+        std::string stp;
+        std::string funds;
+        std::string specific_funds;
+        std::string type;
+        std::string time_in_force;
+        bool post_only;
+        std::string created_at;
+        std::string fill_fees;
+        std::string fill_size;
+        std::string executed_value;
+        std::string status;
+        bool settled;
+
+        Order(std::string id,
+             std::string price,
+             std::string size,
+             std::string product_id,
+             std::string side,
+             std::string stp,
+             std::string funds,
+             std::string specific_funds,
+             std::string type,
+             std::string time_in_force,
+             bool post_only,
+             std::string created_at,
+             std::string fill_fees,
+             std::string fill_size,
+             std::string executed_value,
+             std::string status,
+             bool settled);
+    };
 }
 
 #endif //CTRADER_TYPES_H

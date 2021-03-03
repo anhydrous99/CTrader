@@ -5,6 +5,7 @@
 #include "libCTrader/Api.h"
 #include <iostream>
 #include <utility>
+#include <stdexcept>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
@@ -64,6 +65,21 @@ std::string libCTrader::Api::call(const std::string &method, bool authed, const 
 std::string libCTrader::Api::GetTimestamp() {
     time_t t = time(nullptr);
     return std::to_string(t);
+}
+
+std::string libCTrader::Api::build_url_args(const std::map<std::string, std::string> &args) {
+    std::string output;
+    if (!args.empty())
+        output += "?";
+    for (const auto& arg : args) {
+        output += arg.first;
+        output += "=";
+        output += arg.second;
+        output += "&";
+    }
+    if (!args.empty())
+        output.pop_back();
+    return output;
 }
 
 libCTrader::Api::Api(std::string uri, Auth *auth): uri(std::move(uri)), auth(auth) {
@@ -126,4 +142,174 @@ std::vector<libCTrader::Account_Ledger_Entry> libCTrader::Api::account_ledger(co
 std::string libCTrader::Api::account_holds(const std::string &account_id) {
     auto j = json::parse(call("GET", true, "/accounts/" + account_id + "/holds"));
     return j.dump(2);
+}
+
+libCTrader::Order
+libCTrader::Api::place_market_order(const std::string &product_id, const std::string &side, const std::string &size,
+                                    const std::string &funds) {
+    json o;
+    o["type"] = "market";
+    o["side"] = side;
+    o["product_id"] = product_id;
+    if (size.empty() ^ funds.empty()) {
+        if (!size.empty())
+            o["size"] = size;
+        if (!funds.empty())
+            o["funds"] = funds;
+    } else
+        throw std::runtime_error("Either size or funds must be set.");
+    auto j = json::parse(call("POST", true, "/orders", o.dump()));
+    return {
+        j["id"],
+        j.count("price") == 0 ?  "" : j["price"],
+        j.count("size") == 0 ? "" : j["size"],
+        j["product_id"],
+        j["side"],
+        j["stp"],
+        j.count("funds") == 0 ? "" : j["funds"],
+        j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+        j["type"],
+        j["time_in_force"],
+        j["post_only"],
+        j["created_at"],
+        j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+        j.count("fill_size") == 0 ? "" : j["fill_size"],
+        j.count("executed_value") == 0 ? "" : j["executed_value"],
+        j["status"],
+        j["settled"]
+    };
+}
+
+libCTrader::Order
+libCTrader::Api::place_limit_order(const std::string &product_id, const std::string &side, const std::string &price,
+                                   const std::string &size) {
+    json o;
+    o["type"] = "limit";
+    o["product_id"] = product_id;
+    o["side"] = side;
+    o["price"] = price;
+    o["size"] = size;
+    o["post_only"] = true;
+    auto j = json::parse(call("POST", true, "/orders", o.dump()));
+    return {
+            j["id"],
+            j.count("price") == 0 ?  "" : j["price"],
+            j.count("size") == 0 ? "" : j["size"],
+            j["product_id"],
+            j["side"],
+            j["stp"],
+            j.count("funds") == 0 ? "" : j["funds"],
+            j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+            j["type"],
+            j["time_in_force"],
+            j["post_only"],
+            j["created_at"],
+            j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+            j.count("fill_size") == 0 ? "" : j["fill_size"],
+            j.count("executed_value") == 0 ? "" : j["executed_value"],
+            j["status"],
+            j["settled"]
+    };
+}
+
+libCTrader::Order
+libCTrader::Api::place_stop_order(const std::string &product_id, const std::string &side, const std::string &price,
+                                  const std::string &size, const std::string &funds) {
+    json o;
+    o["type"] = "stop";
+    o["side"] = side;
+    o["product_id"] = product_id;
+    o["price"] = price;
+    if (size.empty() ^ funds.empty()) {
+        if (!size.empty())
+            o["size"] = size;
+        if (!funds.empty())
+            o["funds"] = funds;
+    } else
+        throw std::runtime_error("Either size or funds must be set.");
+    auto j = json::parse(call("POST", true, "/orders", o.dump()));
+    return {
+            j["id"],
+            j.count("price") == 0 ?  "" : j["price"],
+            j.count("size") == 0 ? "" : j["size"],
+            j["product_id"],
+            j["side"],
+            j["stp"],
+            j.count("funds") == 0 ? "" : j["funds"],
+            j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+            j["type"],
+            j["time_in_force"],
+            j["post_only"],
+            j["created_at"],
+            j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+            j.count("fill_size") == 0 ? "" : j["fill_size"],
+            j.count("executed_value") == 0 ? "" : j["executed_value"],
+            j["status"],
+            j["settled"]
+    };
+}
+
+void libCTrader::Api::cancel_all_orders(const std::string *product_id) {
+    std::string path = "/orders";
+    if (product_id != nullptr)
+        path += "?product_id" + *product_id;
+    call("DELETE", true, path);
+}
+
+std::vector<libCTrader::Order> libCTrader::Api::list_orders(const std::string *status, const std::string *product_id) {
+    std::string path = "/orders";
+    std::map<std::string, std::string> args;
+    if (status != nullptr)
+        args["status"] = *status;
+    if (product_id != nullptr)
+        args["product_id"] = *product_id;
+    path += build_url_args(args);
+    auto json = json::parse(call("GET", true, path));
+
+    std::vector<Order> output;
+    for (const auto& j : json) {
+        output.emplace_back(
+                j["id"],
+                j.count("price") == 0 ?  "" : j["price"],
+                j.count("size") == 0 ? "" : j["size"],
+                j["product_id"],
+                j["side"],
+                j["stp"],
+                j.count("funds") == 0 ? "" : j["funds"],
+                j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+                j["type"],
+                j["time_in_force"],
+                j["post_only"],
+                j["created_at"],
+                j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+                j.count("fill_size") == 0 ? "" : j["fill_size"],
+                j.count("executed_value") == 0 ? "" : j["executed_value"],
+                j["status"],
+                j["settled"]
+                );
+    }
+    return output;
+}
+
+libCTrader::Order libCTrader::Api::get_order(const std::string &order_id) {
+    auto j = json::parse(call("GET", true, "/orders/" + order_id));
+    return {
+            j["id"],
+            j.count("price") == 0 ?  "" : j["price"],
+            j.count("size") == 0 ? "" : j["size"],
+            j["product_id"],
+            j["side"],
+            j["stp"],
+            j.count("funds") == 0 ? "" : j["funds"],
+            j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+            j["type"],
+            j["time_in_force"],
+            j["post_only"],
+            j["created_at"],
+            j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+            j.count("fill_size") == 0 ? "" : j["fill_size"],
+            j.count("executed_value") == 0 ? "" : j["executed_value"],
+            j["status"],
+            j["settled"]
+    };
 }
