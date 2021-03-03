@@ -21,6 +21,8 @@ int main() {
     Settings settings;
     libCTrader::Api *api = settings.get_api();
     Accounts accounts(api);
+    auto products = api->get_products();
+    int product_selection = 0;
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -61,6 +63,7 @@ int main() {
     bool show_accounts_window = false;
     bool show_performance_window = false;
     bool show_settings_window = false;
+    bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     while(!glfwWindowShouldClose(window)) {
         // Poll events
@@ -80,6 +83,14 @@ int main() {
                 ImGui::EndMenu();
             }
             ImGui::Text("|");
+            if (ImGui::BeginMenu("Products")) {
+                for (int i = 0; i < products.size(); i++) {
+                    if (ImGui::RadioButton(products[i].display_name.c_str(), &product_selection, i))
+                        new_product_selected = true;
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::Text("|");
             ImGui::EndMainMenuBar();
         }
 
@@ -92,6 +103,10 @@ int main() {
         // Show accounts window
         if (show_accounts_window)
             show_accounts_window = !accounts.display_accounts_window();
+        if (new_product_selected) {
+            // TODO
+            new_product_selected = false;
+        }
 
         // Rendering
         ImGui::Render();
