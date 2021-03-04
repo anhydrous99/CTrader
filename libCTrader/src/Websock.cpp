@@ -35,6 +35,7 @@ void libCTrader::Websock::Connect() {
     client.connect(web::uri(utility::conversions::to_string_t(uri))).wait();
     connected = true;
     send_message(o.dump());
+    std::cout << "WS: Connected\n";
 }
 
 void libCTrader::Websock::message_handler(const std::string &msg) {
@@ -51,6 +52,7 @@ void libCTrader::Websock::Disconnect() {
     send_message(o.dump());
     client.close().wait();
     connected = false;
+    std::cout << "WS: Disconnected\n";
 }
 
 void libCTrader::Websock::add_channel_product_pair(const std::string &channel, const libCTrader::Product &product) {
@@ -111,4 +113,13 @@ void libCTrader::Websock::add_channel(const std::string &channel, const std::vec
         o["channels"].push_back(i);
         send_message(o.dump());
     }
+}
+
+void libCTrader::Websock::set_uri(const std::string &uri) {
+    this->uri = uri;
+}
+
+libCTrader::Websock::~Websock() {
+    if (connected)
+        Disconnect();
 }

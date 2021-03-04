@@ -8,10 +8,11 @@
 #include "imgui.h"
 #include "Settings.h"
 
-Settings::Settings() : api("", nullptr) {
+Settings::Settings() : api("", nullptr), websock("") {
     load();
     api.set_uri(api_uri);
     api.set_auth(&auth);
+    websock.set_uri(ws_uri);
 }
 
 std::string Settings::get_api_uri() {
@@ -122,4 +123,8 @@ void Settings::load() {
     auth.set_passphrase(authentication["Passphrase"].as<std::string>());
 
     first = true;
+}
+
+libCTrader::Websock *Settings::get_websock() {
+    return &websock;
 }

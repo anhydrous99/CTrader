@@ -8,8 +8,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <libCTrader/Api.h>
-
 static void glfw_error_callback(int error, const char* description)
 {
     std::cerr << "Glfw Error " << error << ": " << description << "\n";
@@ -20,9 +18,14 @@ int main() {
     // Get settings
     Settings settings;
     libCTrader::Api *api = settings.get_api();
+    libCTrader::Websock *websock = settings.get_websock();
     Accounts accounts(api);
     auto products = api->get_products();
     int product_selection = 0;
+
+    // Connect websocket to starting product
+    websock->add_channel("ticker", products);
+    websock->Connect();
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);

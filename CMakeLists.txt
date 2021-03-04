@@ -60,6 +60,8 @@ add_executable(CTrader
         src/widgets/Account.h
         src/widgets/ProductInfo.cpp
         src/widgets/ProductInfo.h
+        src/widgets/Ticker.cpp
+        src/widgets/Ticker.h
         ${ImGui}
         ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)

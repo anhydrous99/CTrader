@@ -5,6 +5,7 @@
 #ifndef CTRADER_SETTINGS_H
 #define CTRADER_SETTINGS_H
 
+#include <libCTrader/Websock.h>
 #include <libCTrader/Auth.h>
 #include <libCTrader/Api.h>
 
@@ -16,6 +17,7 @@ class Settings {
     std::string fix_uri;
     libCTrader::Auth auth;
     libCTrader::Api api;
+    libCTrader::Websock websock;
     void load();
 
 public:
@@ -26,6 +28,7 @@ public:
     std::string get_fix_uri();
     libCTrader::Auth *get_authentication();
     libCTrader::Api *get_api();
+    libCTrader::Websock *get_websock();
 
     bool create_settings_window();
     bool settings_have_changed();

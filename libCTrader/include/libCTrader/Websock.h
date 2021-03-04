@@ -19,11 +19,13 @@ namespace libCTrader {
 
     public:
         explicit Websock(std::string uri);
+        ~Websock();
         void Connect();
         void Disconnect();
         void add_channel_product_pair(const std::string &channel, const Product &product);
         void remove_channel_product_pair(const std::string &channel, const Product &product);
         void add_channel(const std::string &channel, const std::vector<Product> &products);
+        void set_uri(const std::string &uri);
     };
 }
 
