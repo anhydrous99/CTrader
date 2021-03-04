@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(CTrader)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 # Get CPM & CPM packages
 set(CPM_DOWNLOAD_VERSION 0.31.1)
@@ -60,8 +60,8 @@ add_executable(CTrader
         src/widgets/Account.h
         src/widgets/ProductInfo.cpp
         src/widgets/ProductInfo.h
-        src/widgets/Ticker.cpp
-        src/widgets/Ticker.h
+        src/widgets/WatchList.cpp
+        src/widgets/WatchList.h
         ${ImGui}
         ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)

@@ -53,6 +53,10 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
             j["best_bid"],
             j["best_ask"]
         };
+        {
+            std::unique_lock lock(tickers_mutex);
+            tickers[product_id] = ticker;
+        }
     }
     std::cout << msg << std::endl;
 }
@@ -137,4 +141,18 @@ void libCTrader::Websock::set_uri(const std::string &uri) {
 libCTrader::Websock::~Websock() {
     if (connected)
         Disconnect();
+}
+
+libCTrader::WSTicker libCTrader::Websock::get_ticker(const std::string &product_id) {
+    std::shared_lock lock(tickers_mutex);
+    return tickers[product_id];
+}
+
+void libCTrader::Websock::on_new_ticker(const std::function<void(WSTicker)>& fun) {
+    on_ticker = fun;
+}
+
+std::map<std::string, libCTrader::WSTicker> libCTrader::Websock::get_tickers() {
+    std::shared_lock lock(tickers_mutex);
+    return tickers;
 }

@@ -2,3 +2,4 @@
 #include "widgets/Accounts.h"
 #include "widgets/Account.h"
 #include "widgets/ProductInfo.h"
+#include "widgets/WatchList.h"
