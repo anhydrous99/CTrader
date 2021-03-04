@@ -11,21 +11,19 @@
 namespace libCTrader {
     class Websock {
         web::web_sockets::client::websocket_callback_client client;
-        std::string get_sub_string(bool sub);
         void message_handler(const std::string &msg);
         void send_message(const std::string &msg);
-
-        std::vector<std::string> channels;
-        Product current_product;
+        std::map<std::string, std::vector<Product>> products_channels;
         std::string uri;
+        bool connected = false;
 
     public:
-        Websock(Product product, std::vector<std::string> channels, std::string uri);
+        explicit Websock(std::string uri);
         void Connect();
         void Disconnect();
-        void add_channel(const std::string &channel);
-        void remove_channel(const std::string &channel);
-        void change_product(const Product &product);
+        void add_channel_product_pair(const std::string &channel, const Product &product);
+        void remove_channel_product_pair(const std::string &channel, const Product &product);
+        void add_channel(const std::string &channel, const std::vector<Product> &products);
     };
 }
 
