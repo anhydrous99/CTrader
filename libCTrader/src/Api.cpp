@@ -5,8 +5,6 @@
 #include "libCTrader/Api.h"
 #include <iostream>
 #include <utility>
-#include <chrono>
-#include <thread>
 #include <stdexcept>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
@@ -20,10 +18,6 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
 }
 
 std::string libCTrader::Api::call(const std::string &method, bool authed, const std::string &path, const std::string &body) {
-    if (authed)
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    else
-        std::this_thread::sleep_for(std::chrono::milliseconds(334));
     CURL *curl;
     CURLcode res;
     std::string readBuffer;
