@@ -23,7 +23,7 @@ find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/include/libCTrader/types.h libCTrader/src/types.cpp)
+add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader/include)
 target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
