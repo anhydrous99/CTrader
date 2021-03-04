@@ -166,6 +166,22 @@ namespace libCTrader {
                std::string ask, std::string volume);
     };
 
+    struct WSTicker {
+        int trade_id = 0;
+        int sequence = 0;
+        std::string time;
+        std::string product_id;
+        std::string price;
+        std::string side;
+        std::string last_size;
+        std::string best_bid;
+        std::string best_ask;
+
+        WSTicker(int trade_id, int sequence, std::string time, std::string product_id, std::string price,
+                 std::string side, std::string last_size, std::string best_bid, std::string best_ask);
+        WSTicker() = default;
+    };
+
     struct Trade {
         std::string time;
         int trade_id;

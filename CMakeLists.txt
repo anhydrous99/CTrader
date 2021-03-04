@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(CTrader)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Get CPM & CPM packages
 set(CPM_DOWNLOAD_VERSION 0.31.1)
@@ -20,12 +20,13 @@ include(cmake/curl.cmake)
 ##
 
 find_package(cpprestsdk REQUIRED)
+find_package(TBB REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader/include)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json TBB::tbb)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui

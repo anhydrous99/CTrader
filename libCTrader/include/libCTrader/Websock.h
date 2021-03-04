@@ -13,7 +13,7 @@ namespace libCTrader {
         web::web_sockets::client::websocket_callback_client client;
         void message_handler(const std::string &msg);
         void send_message(const std::string &msg);
-        std::map<std::string, std::vector<Product>> products_channels;
+        std::map<std::string, std::vector<Product>> channel_products;
         std::string uri;
         bool connected = false;
 

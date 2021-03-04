@@ -135,3 +135,10 @@ libCTrader::Trade::Trade(std::string time, int trade_id, std::string price, std:
 
 libCTrader::Candle::Candle(uint64_t time, float low, float high, float open, float close, float volume):
     time(time), low(low), high(high), open(open), close(close), volume(volume) {}
+
+libCTrader::WSTicker::WSTicker(int trade_id, int sequence, std::string time, std::string product_id, std::string price,
+                               std::string side, std::string last_size, std::string best_bid, std::string best_ask) :
+                               trade_id(trade_id), sequence(sequence), time(std::move(time)),
+                               product_id(std::move(product_id)), price(std::move(price)), side(std::move(side)),
+                               last_size(std::move(last_size)), best_bid(std::move(best_bid)), best_ask(std::move(best_ask))
+                               {}
