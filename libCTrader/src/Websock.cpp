@@ -145,7 +145,11 @@ libCTrader::Websock::~Websock() {
 
 libCTrader::WSTicker libCTrader::Websock::get_ticker(const std::string &product_id) {
     std::shared_lock lock(tickers_mutex);
-    return tickers[product_id];
+    auto itr = tickers.find(product_id);
+    if (itr == tickers.end())
+        return WSTicker();
+    else
+        return itr->second;
 }
 
 void libCTrader::Websock::on_new_ticker(const std::function<void(WSTicker)>& fun) {

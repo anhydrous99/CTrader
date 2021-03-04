@@ -27,6 +27,9 @@ int main() {
     websock->add_channel("ticker", products);
     websock->Connect();
 
+    // Create WatchList class
+    WatchList watchList(websock, products);
+
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -67,6 +70,7 @@ int main() {
     bool show_product_info_window = false;
     bool show_performance_window = false;
     bool show_settings_window = false;
+    bool show_watchlist_window = false;
 
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -82,6 +86,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("WatchList", & show_watchlist_window);
                 ImGui::Checkbox("Accounts", & show_accounts_window);
                 ImGui::Checkbox("Product Info", & show_product_info_window);
                 ImGui::Checkbox("Performance", & show_performance_window);
@@ -116,6 +121,9 @@ int main() {
             // TODO
             new_product_selected = false;
         }
+        // Show watch list window
+        if (show_watchlist_window)
+            show_watchlist_window = !watchList.display_watch_list_window();
 
         // Rendering
         ImGui::Render();
