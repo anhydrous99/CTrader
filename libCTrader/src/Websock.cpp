@@ -52,7 +52,12 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
                 j["side"],
                 j["last_size"],
                 j["best_bid"],
-                j["best_ask"]
+                j["best_ask"],
+                j["open_24h"],
+                j["volume_24h"],
+                j["low_24h"],
+                j["high_24h"],
+                j["volume_30d"]
         };
         {
             std::unique_lock lock(tickers_mutex);

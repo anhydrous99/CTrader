@@ -176,9 +176,16 @@ namespace libCTrader {
         std::string last_size;
         std::string best_bid;
         std::string best_ask;
+        std::string open_24h;
+        std::string volume_24h;
+        std::string low_24h;
+        std::string high_24h;
+        std::string volume_30d;
 
         WSTicker(int trade_id, int sequence, std::string time, std::string product_id, std::string price,
-                 std::string side, std::string last_size, std::string best_bid, std::string best_ask);
+                 std::string side, std::string last_size, std::string best_bid, std::string best_ask,
+                 std::string open_24h, std::string volume_24h, std::string low_24h, std::string high_24h,
+                 std::string volume_30d);
         WSTicker() = default;
     };
 

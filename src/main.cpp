@@ -24,11 +24,11 @@ int main() {
     int product_selection = 0;
 
     // Connect websocket to starting product
-    websock->add_channel("ticker", products);
+    websock->add_channel_product_pair("ticker", products[product_selection]);
     websock->Connect();
 
     // Create WatchList class
-    WatchList watchList(websock, products);
+    WatchList watchList(websock, products, {product_selection});
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -118,6 +118,7 @@ int main() {
         if (show_accounts_window)
             show_accounts_window = !accounts.display_accounts_window();
         if (new_product_selected) {
+            watchList.add_product(products[product_selection]);
             // TODO
             new_product_selected = false;
         }
