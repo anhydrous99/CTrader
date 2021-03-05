@@ -63,6 +63,6 @@ add_executable(CTrader
         src/widgets/WatchList.cpp
         src/widgets/WatchList.h
         ${ImGui}
-        ${ImPlot})
+        ${ImPlot} src/widgets/TradeHistory.cpp src/widgets/TradeHistory.h)
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
 configure_file(${CMAKE_SOURCE_DIR}/settings.yaml ${CMAKE_BINARY_DIR}/settings.yaml COPYONLY)

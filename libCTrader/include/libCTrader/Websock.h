@@ -16,7 +16,7 @@ namespace libCTrader {
         void message_handler(const std::string &msg);
         void send_message(const std::string &msg);
         std::map<std::string, std::vector<Product>> channel_products;
-        std::function<void(WSTicker)> on_ticker;
+        std::function<void(const WSTicker &)> on_ticker;
         std::string uri;
         bool connected = false;
 
@@ -31,10 +31,11 @@ namespace libCTrader {
         void add_channel_product_pair(const std::string &channel, const Product &product);
         void remove_channel_product_pair(const std::string &channel, const Product &product);
         void add_channel(const std::string &channel, const std::vector<Product> &products);
-        void on_new_ticker(const std::function<void(WSTicker)>& fun);
+        void on_new_ticker(const std::function<void(const WSTicker&)> &handler);
+        bool is_connected(const std::string &channel, const Product &product);
         std::map<std::string, WSTicker> get_tickers();
         WSTicker get_ticker(const std::string &product_id);
-        void set_uri(const std::string &uri);
+        void set_uri(const std::string &u);
     };
 }
 

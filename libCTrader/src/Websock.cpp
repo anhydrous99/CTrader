@@ -63,6 +63,8 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
             std::unique_lock lock(tickers_mutex);
             tickers[product_id] = ticker;
         }
+        if (on_ticker)
+            on_ticker(ticker);
     }
 }
 
@@ -81,12 +83,17 @@ void libCTrader::Websock::Disconnect() {
 
 void libCTrader::Websock::add_channel_product_pair(const std::string &channel, const libCTrader::Product &product) {
     auto itr = channel_products.find(channel);
-    if (itr != channel_products.end())
-        itr->second.push_back(product);
-    else
-        channel_products[channel] = std::vector<Product>{product };
+    bool found = false;
+    if (itr != channel_products.end()) {
+        auto sub_itr = std::find(itr->second.begin(), itr->second.end(), product);
+        if (sub_itr != itr->second.end())
+            found = true;
+        else
+            itr->second.push_back(product);
+    } else
+        channel_products[channel] = std::vector<Product>{product};
 
-    if (connected) {
+    if (connected && !found) {
         json o, i;
         i["name"] = channel;
         i["product_ids"].push_back(product.id);
@@ -108,7 +115,7 @@ void libCTrader::Websock::remove_channel_product_pair(const std::string &channel
     if (itr->second.empty())
         channel_products.erase(itr);
 
-    if (connected) {
+    if (connected && itr != channel_products.end()) {
         json o, i;
         i["name"] = channel;
         i["product_ids"].push_back(product.id);
@@ -139,8 +146,8 @@ void libCTrader::Websock::add_channel(const std::string &channel, const std::vec
     }
 }
 
-void libCTrader::Websock::set_uri(const std::string &uri) {
-    this->uri = uri;
+void libCTrader::Websock::set_uri(const std::string &u) {
+    this->uri = u;
 }
 
 libCTrader::Websock::~Websock() {
@@ -157,11 +164,21 @@ libCTrader::WSTicker libCTrader::Websock::get_ticker(const std::string &product_
         return itr->second;
 }
 
-void libCTrader::Websock::on_new_ticker(const std::function<void(WSTicker)>& fun) {
-    on_ticker = fun;
-}
-
 std::map<std::string, libCTrader::WSTicker> libCTrader::Websock::get_tickers() {
     std::shared_lock lock(tickers_mutex);
     return tickers;
+}
+
+void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler) {
+    on_ticker = handler;
+}
+
+bool libCTrader::Websock::is_connected(const std::string &channel, const libCTrader::Product &product) {
+    auto itr = channel_products.find(channel);
+    if (itr == channel_products.end())
+        return false;
+    auto sub_itr = std::find(channel_products[channel].begin(), channel_products[channel].end(), product);
+    if (sub_itr == channel_products[channel].end())
+        return false;
+    return true;
 }

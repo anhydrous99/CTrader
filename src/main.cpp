@@ -21,14 +21,18 @@ int main() {
     libCTrader::Websock *websock = settings.get_websock();
     Accounts accounts(api);
     auto products = api->get_products();
+    auto current_product = products[0];
     int product_selection = 0;
 
     // Connect websocket to starting product
-    websock->add_channel_product_pair("ticker", products[product_selection]);
+    websock->add_channel_product_pair("ticker", current_product);
     websock->Connect();
 
     // Create WatchList class
     WatchList watchList(websock, products, {product_selection});
+
+    // Create tradehistory class
+    TradeHistory tradeHistory(websock, current_product);
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -71,6 +75,7 @@ int main() {
     bool show_performance_window = false;
     bool show_settings_window = false;
     bool show_watchlist_window = false;
+    bool show_trade_history_window = false;
 
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -86,6 +91,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("Trade History", & show_trade_history_window);
                 ImGui::Checkbox("WatchList", & show_watchlist_window);
                 ImGui::Checkbox("Accounts", & show_accounts_window);
                 ImGui::Checkbox("Product Info", & show_product_info_window);
@@ -101,7 +107,7 @@ int main() {
                 }
                 ImGui::EndMenu();
             }
-            ImGui::Text("|");
+            ImGui::Text("| %s", current_product.display_name.c_str());
             ImGui::EndMainMenuBar();
         }
 
@@ -118,13 +124,17 @@ int main() {
         if (show_accounts_window)
             show_accounts_window = !accounts.display_accounts_window();
         if (new_product_selected) {
-            watchList.add_product(products[product_selection]);
+            current_product = products[product_selection];
+            tradeHistory.change_product(current_product);
             // TODO
             new_product_selected = false;
         }
         // Show watch list window
         if (show_watchlist_window)
             show_watchlist_window = !watchList.display_watch_list_window();
+        // Show trade history window
+        if (show_trade_history_window)
+            tradeHistory.display_trade_history_window();
 
         // Rendering
         ImGui::Render();

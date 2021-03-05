@@ -58,7 +58,7 @@ bool WatchList::display_watch_list_window() {
             ImGui::TableSetColumnIndex(3);
             if (!p.ticker.volume_24h.empty()) {
                 float vol = std::stof(p.ticker.volume_24h);
-                ImGui::Text("%s", aggregator(vol).c_str());
+                ImGui::Text("  %s", aggregator(vol).c_str());
             }
 
         }
