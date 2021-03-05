@@ -40,25 +40,25 @@ void libCTrader::Websock::Connect() {
 
 void libCTrader::Websock::message_handler(const std::string &msg) {
     auto j = json::parse(msg);
-    if (j["type"] == "ticker") {
+    std::cout << msg << std::endl;
+    if (j["type"] == "ticker" && j.count("sequence") == 1) {
         std::string product_id = j["product_id"];
-        WSTicker ticker {
-            j["trade_id"],
-            j["sequence"],
-            j["time"],
-            j["product_id"],
-            j["price"],
-            j["side"],
-            j["last_size"],
-            j["best_bid"],
-            j["best_ask"]
+        WSTicker ticker{
+                j["trade_id"],
+                j["sequence"],
+                j["time"],
+                j["product_id"],
+                j["price"],
+                j["side"],
+                j["last_size"],
+                j["best_bid"],
+                j["best_ask"]
         };
         {
             std::unique_lock lock(tickers_mutex);
             tickers[product_id] = ticker;
         }
     }
-    std::cout << msg << std::endl;
 }
 
 void libCTrader::Websock::Disconnect() {
