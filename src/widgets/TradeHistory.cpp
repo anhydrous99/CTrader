@@ -6,7 +6,7 @@
 #include "imgui.h"
 
 TradeHistory::TradeHistory(libCTrader::Websock* sock, const libCTrader::Product &product) : current_product(product),
-    trade_history(48), websock(sock) {
+    trade_history(192), websock(sock) {
     websock->add_channel_product_pair("ticker", product, 1);
     websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
         if (current_product.id == ticker.product_id)
