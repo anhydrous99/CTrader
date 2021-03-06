@@ -4,6 +4,7 @@
 
 #include "libCTrader/Websock.h"
 #include <nlohmann/json.hpp>
+#include <set>
 
 using json = nlohmann::json;
 using namespace web::websockets::client;
@@ -23,6 +24,16 @@ void libCTrader::Websock::send_message(const std::string &msg) {
 }
 
 void libCTrader::Websock::Connect() {
+    std::map<std::string, std::vector<Product>> channel_products;
+    for (const auto &channel_product_id : channel_product_ids) {
+        const auto &product_channel = channel_product_id.first;
+        auto itr = channel_products.find(product_channel.first);
+        if (itr == channel_products.end())
+            channel_products[product_channel.first] = {product_channel.second};
+        else
+            channel_products[product_channel.first].push_back(product_channel.second);
+    }
+
     json o;
     o["type"] = "subscribe";
     for (const auto &product_channel : channel_products) {
@@ -69,9 +80,9 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
 }
 
 void libCTrader::Websock::Disconnect() {
-    std::vector<std::string> channels;
-    for (auto &product_channel : channel_products)
-        channels.push_back(product_channel.first);
+    std::set<std::string> channels;
+    for (const auto& channel_product_id : channel_product_ids)
+        channels.insert(channel_product_id.first.first);
     json o;
     o["type"] = "unsubscribe";
     o["channels"] = channels;
@@ -81,17 +92,15 @@ void libCTrader::Websock::Disconnect() {
     std::cout << "WS: Disconnected\n";
 }
 
-void libCTrader::Websock::add_channel_product_pair(const std::string &channel, const libCTrader::Product &product) {
-    auto itr = channel_products.find(channel);
+void libCTrader::Websock::add_channel_product_pair(const std::string &channel, const libCTrader::Product &product, int id) {
     bool found = false;
-    if (itr != channel_products.end()) {
-        auto sub_itr = std::find(itr->second.begin(), itr->second.end(), product);
-        if (sub_itr != itr->second.end())
-            found = true;
-        else
-            itr->second.push_back(product);
+    const auto chpr_pair = std::make_pair(channel, product);
+    auto itr = channel_product_ids.find(chpr_pair);
+    if (itr != channel_product_ids.end()) {
+        channel_product_ids[chpr_pair].push_back(id);
+        found = true;
     } else
-        channel_products[channel] = std::vector<Product>{product};
+        channel_product_ids[chpr_pair] = {id};
 
     if (connected && !found) {
         json o, i;
@@ -104,18 +113,20 @@ void libCTrader::Websock::add_channel_product_pair(const std::string &channel, c
     }
 }
 
-void libCTrader::Websock::remove_channel_product_pair(const std::string &channel, const libCTrader::Product &product) {
-    auto itr = channel_products.find(channel);
-    if (itr == channel_products.end())
-        throw std::runtime_error("Can remove a channel product pair that doesn't exist.");
-    auto sub_itr = std::find(itr->second.begin(), itr->second.end(), product);
-    if (sub_itr == itr->second.end())
-        throw std::runtime_error("Can remove a channel product pair that doesn't exist.");
-    itr->second.erase(sub_itr);
-    if (itr->second.empty())
-        channel_products.erase(itr);
+void libCTrader::Websock::remove_channel_product_pair(const std::string &channel, const libCTrader::Product &product, int id) {
+    bool unsub = false;
+    auto itr = channel_product_ids.find(std::make_pair(channel, product));
+    if (itr != channel_product_ids.end()) {
+        auto sub_itr = std::find(itr->second.begin(), itr->second.end(), id);
+        if (sub_itr != itr->second.end())
+            itr->second.erase(sub_itr);
+        if (itr->second.empty()) {
+            channel_product_ids.erase(itr);
+            unsub = true;
+        }
+    }
 
-    if (connected && itr != channel_products.end()) {
+    if (connected && unsub) {
         json o, i;
         i["name"] = channel;
         i["product_ids"].push_back(product.id);
@@ -126,22 +137,44 @@ void libCTrader::Websock::remove_channel_product_pair(const std::string &channel
     }
 }
 
-void libCTrader::Websock::add_channel(const std::string &channel, const std::vector<Product> &products) {
-    auto itr = channel_products.find(channel);
-    if (itr != channel_products.end()) {
-        for (const auto& product : products)
-            itr->second.push_back(product);
-    } else
-        channel_products[channel] = products;
+void libCTrader::Websock::add_channel(const std::string &channel, const std::vector<Product> &products, int id) {
+    std::vector<Product> to_add;
+    for (const auto& product : products) {
+        const auto chpr_pair = std::make_pair(channel, product);
+        auto itr = channel_product_ids.find(chpr_pair);
+        if (itr != channel_product_ids.end()) {
+            channel_product_ids[chpr_pair].push_back(id);
+        } else {
+            channel_product_ids[chpr_pair] = {id};
+            to_add.push_back(product);
+        }
+    }
 
-    if (connected) {
+    if (connected && !to_add.empty()) {
         json o, i;
         i["name"] = channel;
-        for (const auto& product : products)
+        for (const auto& product : to_add)
             i["product_ids"].push_back(product.id);
 
         o["type"] = "subscribe";
         o["channels"].push_back(i);
+        send_message(o.dump());
+    }
+}
+
+void libCTrader::Websock::remove_channel(const std::string &channel) {
+    bool found = false;
+    for (auto & channel_product_id : channel_product_ids) {
+        if (channel_product_id.first.first == channel) {
+            found = true;
+            break;
+        }
+    }
+
+    if (connected && found) {
+        json o;
+        o["type"] = "unsubscribe";
+        o["channels"] = channel;
         send_message(o.dump());
     }
 }
@@ -174,11 +207,6 @@ void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker 
 }
 
 bool libCTrader::Websock::is_connected(const std::string &channel, const libCTrader::Product &product) {
-    auto itr = channel_products.find(channel);
-    if (itr == channel_products.end())
-        return false;
-    auto sub_itr = std::find(channel_products[channel].begin(), channel_products[channel].end(), product);
-    if (sub_itr == channel_products[channel].end())
-        return false;
-    return true;
+    auto itr = channel_product_ids.find(std::make_pair(channel, product));
+    return itr != channel_product_ids.end();
 }

@@ -118,6 +118,10 @@ bool libCTrader::Product::operator==(const libCTrader::Product &product) const {
     return id == product.id;
 }
 
+bool libCTrader::Product::operator<(const libCTrader::Product &product) const {
+    return id < product.id;
+}
+
 libCTrader::Page::Page(std::string price, std::string size, std::string side, int num_orders) :
     price(std::move(price)), size(std::move(size)), side(std::move(side)), num_orders(num_orders) {}
 

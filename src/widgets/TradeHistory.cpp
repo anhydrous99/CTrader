@@ -7,7 +7,7 @@
 
 TradeHistory::TradeHistory(libCTrader::Websock* sock, const libCTrader::Product &product) : current_product(product),
     trade_history(48), websock(sock) {
-    websock->add_channel_product_pair("ticker", product);
+    websock->add_channel_product_pair("ticker", product, 1);
     websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
         if (current_product.id == ticker.product_id)
             trade_history.push(ticker);
@@ -16,7 +16,8 @@ TradeHistory::TradeHistory(libCTrader::Websock* sock, const libCTrader::Product 
 
 void TradeHistory::change_product(const libCTrader::Product &new_product) {
     trade_history.clear();
-    websock->add_channel_product_pair("ticker", new_product);
+    websock->remove_channel_product_pair("ticker", current_product, 1);
+    websock->add_channel_product_pair("ticker", new_product, 1);
     current_product = new_product;
 }
 

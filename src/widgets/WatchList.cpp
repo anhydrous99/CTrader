@@ -118,13 +118,13 @@ void WatchList::add_product(const libCTrader::Product &p) {
                 return a.product == p;
             });
     if (itr == selected_products.end()) {
-        websock_ptr->add_channel_product_pair("ticker", p);
+        websock_ptr->add_channel_product_pair("ticker", p, 0);
         selected_products.emplace_back(p, high_resolution_clock::now(), websock_ptr->get_ticker(p.id));
     }
 }
 
 void WatchList::remove_product(const libCTrader::Product &p) {
-    websock_ptr->remove_channel_product_pair("ticker", p);
+    websock_ptr->remove_channel_product_pair("ticker", p, 0);
     auto itr = std::find_if(
             selected_products.begin(), selected_products.end(),
             [&](const ProductDetails& a) {

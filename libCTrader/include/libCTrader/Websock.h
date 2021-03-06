@@ -6,6 +6,7 @@
 #define CTRADER_WEBSOCK_H
 
 #include <cpprest/ws_client.h>
+#include <map>
 #include <functional>
 #include <shared_mutex>
 #include "types.h"
@@ -15,7 +16,7 @@ namespace libCTrader {
         web::web_sockets::client::websocket_callback_client client;
         void message_handler(const std::string &msg);
         void send_message(const std::string &msg);
-        std::map<std::string, std::vector<Product>> channel_products;
+        std::map<std::pair<std::string, Product>, std::vector<int>> channel_product_ids;
         std::function<void(const WSTicker &)> on_ticker;
         std::string uri;
         bool connected = false;
@@ -28,9 +29,10 @@ namespace libCTrader {
         ~Websock();
         void Connect();
         void Disconnect();
-        void add_channel_product_pair(const std::string &channel, const Product &product);
-        void remove_channel_product_pair(const std::string &channel, const Product &product);
-        void add_channel(const std::string &channel, const std::vector<Product> &products);
+        void add_channel_product_pair(const std::string &channel, const Product &product, int id=0);
+        void remove_channel_product_pair(const std::string &channel, const Product &product, int id=0);
+        void add_channel(const std::string &channel, const std::vector<Product> &products, int id=0);
+        void remove_channel(const std::string &channel);
         void on_new_ticker(const std::function<void(const WSTicker&)> &handler);
         bool is_connected(const std::string &channel, const Product &product);
         std::map<std::string, WSTicker> get_tickers();

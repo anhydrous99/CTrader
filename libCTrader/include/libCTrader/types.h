@@ -131,6 +131,7 @@ namespace libCTrader {
                 bool trading_disabled
                 );
         bool operator==(const Product &product) const;
+        bool operator<(const Product &product) const;
     };
 
     struct Page {
