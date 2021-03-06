@@ -373,6 +373,7 @@ std::vector<libCTrader::Product> libCTrader::Api::get_products() {
                 j["trading_disabled"]
                 );
     }
+    std::sort(products.begin(), products.end());
     return products;
 }
 
