@@ -151,3 +151,12 @@ libCTrader::WSTicker::WSTicker(int trade_id, int sequence, std::string time, std
                                volume_24h(std::move(volume_24h)), low_24h(std::move(low_24h)),
                                high_24h(std::move(high_24h)), volume_30d(std::move(volume_30d))
                                {}
+
+libCTrader::LVL2Snapshot::LVL2Snapshot(std::string p, std::map<std::string, std::string> b,
+                                       std::map<std::string, std::string> a) : product_id(std::move(p)),
+                                       bids(std::move(b)), asks(std::move(a)) {}
+
+libCTrader::LVL2Update::LVL2Update(std::string product_id, std::string time,
+                                   std::vector<std::tuple<std::string, std::string, std::string>> changes) :
+                                   product_id(std::move(product_id)), time(std::move(time)), changes(std::move(changes))
+                                   {}

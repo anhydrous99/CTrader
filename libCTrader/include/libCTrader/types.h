@@ -7,6 +7,8 @@
 
 #include <string>
 #include <cinttypes>
+#include <vector>
+#include <map>
 
 namespace libCTrader {
     struct Account {
@@ -209,6 +211,22 @@ namespace libCTrader {
         float volume;
 
         Candle(uint64_t time, float low, float high, float open, float close, float volume);
+    };
+
+    struct LVL2Snapshot {
+        std::string product_id;
+        std::map<std::string, std::string> bids;
+        std::map<std::string, std::string> asks;
+
+        LVL2Snapshot(std::string p, std::map<std::string, std::string> b, std::map<std::string, std::string> a);
+    };
+
+    struct LVL2Update {
+        std::string product_id;
+        std::string time;
+        std::vector<std::tuple<std::string, std::string, std::string>> changes;
+
+        LVL2Update(std::string product_id, std::string time, std::vector<std::tuple<std::string, std::string, std::string>> changes);
     };
 }
 

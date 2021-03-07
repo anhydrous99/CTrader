@@ -76,6 +76,29 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
         }
         if (on_ticker)
             on_ticker(ticker);
+    } else if (j["type"] == "snapshot" && on_lvl2_book_snapshot) {
+        std::map<std::string, std::string> bids;
+        std::map<std::string, std::string> asks;
+        for (const auto& bid : j["bids"])
+            bids[bid[0]] = bid[1];
+        for (const auto& ask : j["asks"])
+            asks[ask[0]] = ask[1];
+        LVL2Snapshot snapshot{
+            j["product_id"],
+            bids,
+            asks
+        };
+        on_lvl2_book_snapshot(snapshot);
+    } else if (j["type"] == "l2update" && on_lvl2_book_update) {
+        std::vector<std::tuple<std::string, std::string, std::string>> changes;
+        for (const auto &change : j["changes"])
+            changes.emplace_back(change[0], change[1], change[2]);
+        LVL2Update update{
+            j["product_id"],
+            j["time"],
+            changes
+        };
+        on_lvl2_book_update(update);
     }
 }
 
@@ -209,4 +232,12 @@ void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker 
 bool libCTrader::Websock::is_connected(const std::string &channel, const libCTrader::Product &product) {
     auto itr = channel_product_ids.find(std::make_pair(channel, product));
     return itr != channel_product_ids.end();
+}
+
+void libCTrader::Websock::on_lvl2_snapshot(const std::function<void(const LVL2Snapshot &)> &handler) {
+    on_lvl2_book_snapshot = handler;
+}
+
+void libCTrader::Websock::on_lvl2_update(const std::function<void(const LVL2Update &)> &handler) {
+    on_lvl2_book_update = handler;
 }
