@@ -12,6 +12,7 @@ if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
     file(DOWNLOAD https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
 endif()
 include(${CPM_DOWNLOAD_LOCATION})
+include(cmake/decimal_for_cpp.cmake)
 include(cmake/nlohmann_json.cmake)
 include(cmake/yaml_cpp.cmake)
 include(cmake/glfw3.cmake)
@@ -23,9 +24,9 @@ find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp)
+add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp libCTrader/src/Decimal.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader/include)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json decimal_for_cpp)
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui
@@ -62,7 +63,11 @@ add_executable(CTrader
         src/widgets/ProductInfo.h
         src/widgets/WatchList.cpp
         src/widgets/WatchList.h
+        src/widgets/TradeHistory.cpp
+        src/widgets/TradeHistory.h
+        src/widgets/OrderBook.cpp
+        src/widgets/OrderBook.h
         ${ImGui}
-        ${ImPlot} src/widgets/TradeHistory.cpp src/widgets/TradeHistory.h src/widgets/OrderBook.cpp src/widgets/OrderBook.h)
+        ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
 configure_file(${CMAKE_SOURCE_DIR}/settings.yaml ${CMAKE_BINARY_DIR}/settings.yaml COPYONLY)

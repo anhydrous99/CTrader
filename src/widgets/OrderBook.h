@@ -6,16 +6,20 @@
 #define CTRADER_ORDERBOOK_H
 
 #include <libCTrader/Websock.h>
+#include <libCTrader/Decimal.h>
 
 class OrderBook {
     libCTrader::Websock *websock;
-    std::map<std::string, std::string> bids;
-    std::map<std::string, std::string> asks;
+    libCTrader::Product current_product;
+    std::map<libCTrader::Decimal, std::string> bids;
+    std::map<libCTrader::Decimal, std::string> asks;
     std::shared_mutex bids_mutex;
     std::shared_mutex asks_mutex;
+    std::shared_mutex product_mutex;
 
 public:
-    explicit OrderBook(libCTrader::Websock *websock);
+    explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
+    void change_product(const libCTrader::Product &product);
 };
 
 
