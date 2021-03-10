@@ -4,3 +4,4 @@
 #include "widgets/ProductInfo.h"
 #include "widgets/WatchList.h"
 #include "widgets/TradeHistory.h"
+#include "widgets/OrderBook.h"

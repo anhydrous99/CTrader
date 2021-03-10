@@ -20,6 +20,11 @@ class OrderBook {
 public:
     explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
     void change_product(const libCTrader::Product &product);
+
+    std::map<float, float> get_best_bids(int n, int grouping);
+    std::map<float, float> get_best_asks(int n, int grouping);
+
+    bool display_orderbook_window();
 };
 
 

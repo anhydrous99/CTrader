@@ -25,7 +25,8 @@ int main() {
     int product_selection = 0;
 
     // Connect websocket to starting product
-    websock->add_channel_product_pair("ticker", current_product);
+    websock->add_channel_product_pair("ticker", current_product, 0);
+    websock->add_channel_product_pair("level2", current_product, 2);
     websock->Connect();
 
     // Create WatchList class
@@ -33,6 +34,9 @@ int main() {
 
     // Create tradehistory class
     TradeHistory tradeHistory(websock, current_product);
+
+    // Create OrderBook class
+    OrderBook orderBook(websock, current_product);
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);

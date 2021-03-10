@@ -3,6 +3,7 @@
 //
 
 #include "OrderBook.h"
+#include "imgui.h"
 
 OrderBook::OrderBook(libCTrader::Websock *websock, libCTrader::Product product) : websock(websock), current_product(std::move(product)) {
     websock->on_lvl2_snapshot([&](const libCTrader::LVL2Snapshot &snapshot) {
@@ -54,6 +55,61 @@ OrderBook::OrderBook(libCTrader::Websock *websock, libCTrader::Product product) 
 }
 
 void OrderBook::change_product(const libCTrader::Product &product) {
-    std::unique_lock lock(product_mutex);
+    websock->remove_channel_product_pair("level2", current_product, 2);
+    std::unique_lock product_lock(product_mutex), bids_lock(bids_mutex), asks_lock(asks_mutex);
     current_product = product;
+    bids.clear();
+    asks.clear();
+    websock->add_channel_product_pair("level2", product, 2);
+}
+
+std::map<float, float> OrderBook::get_best_bids(int n, int grouping) {
+    std::shared_lock lock(bids_mutex);
+    auto begin = bids.begin();
+    auto end = bids.end();
+    std::map<float, float> ret;
+    for (int i = 0; i < n; i++) {
+        if (begin == end)
+            break;
+        float price = begin->first.get_flt();
+        float size = std::stof(begin->second);
+        for (int j = 1; j < grouping; j++) {
+            if (begin == end)
+                break;
+            size += std::stof(begin->second);
+            begin++;
+        }
+        ret[price] = size;
+        begin++;
+    }
+    return ret;
+}
+
+std::map<float, float> OrderBook::get_best_asks(int n, int grouping) {
+    std::shared_lock lock(asks_mutex);
+    auto begin = asks.rbegin();
+    auto end = asks.rend();
+    std::map<float, float> ret;
+    for (int i = 0; i < n; i++) {
+        if (begin == end)
+            break;
+        float price = begin->first.get_flt();
+        float size = std::stof(begin->second);
+        for (int j = 1; j < grouping; j++) {
+            if (begin == end)
+                break;
+            size += std::stof(begin->second);
+            begin++;
+        }
+        ret[price] = size;
+        begin++;
+    }
+    return ret;
+}
+
+bool OrderBook::display_orderbook_window() {
+    bool close = false;
+    if (ImGui::Button("Close"))
+        close = true;
+    return close;
 }
