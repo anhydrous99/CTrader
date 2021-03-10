@@ -7,6 +7,7 @@
 
 #include <libCTrader/Websock.h>
 #include <libCTrader/Decimal.h>
+#include <chrono>
 
 class OrderBook {
     libCTrader::Websock *websock;
@@ -16,6 +17,12 @@ class OrderBook {
     std::shared_mutex bids_mutex;
     std::shared_mutex asks_mutex;
     std::shared_mutex product_mutex;
+    std::chrono::high_resolution_clock::time_point last_t = std::chrono::high_resolution_clock::now();
+
+    std::map<float, float> displayed_bids;
+    std::map<float, float> displayed_asks;
+    int grouping = 1;
+    int count = 10;
 
 public:
     explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
