@@ -224,7 +224,7 @@ void OrderBook::display_order_histogram_window() {
     if (duration_cast<milliseconds>(high_resolution_clock::now() - last_hist_t).count() > 800 || hist_first) {
         auto displayed_hist_bids = get_best_bids_hist(hist_count, hist_grouping);
         auto displayed_hist_asks = get_best_asks_hist(hist_count, hist_grouping);
-        auto dhb_itr = displayed_hist_bids.begin();
+        auto dhb_itr = displayed_hist_bids.rbegin();
         auto dha_itr = displayed_hist_asks.begin();
         for (int i = 0; i < displayed_hist_bids.size(); i++) {
             x_bids[i] = dhb_itr->first;
@@ -236,8 +236,9 @@ void OrderBook::display_order_histogram_window() {
             y_asks[i] = dha_itr->second;
             dha_itr++;
         }
-        xmin = static_cast<int>(displayed_hist_asks.begin()->first);
-        xmax = static_cast<int>(displayed_hist_bids.rbegin()->first);
+        double mid_mark = (displayed_hist_asks.rbegin()->first + displayed_hist_bids.begin()->first) / 2;
+        xmin = static_cast<int>(mid_mark - 500); // TODO:  need to scale
+        xmax = static_cast<int>(mid_mark + 500);
         double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(), [](const auto& a, const auto& b) {
             return a.second < b.second;
         })->second;
@@ -253,25 +254,13 @@ void OrderBook::display_order_histogram_window() {
     ImPlot::CreateContext();
     ImGui::Begin("Order Histogram");
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
-    if (ImPlot::BeginPlot("My Plot", "Price", "Size")) {
+    if (ImPlot::BeginPlot("Order Histogram", "Price", "Size")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.5f);
         ImPlot::PlotShaded("Asks", x_bids, y_bids, hist_count, static_cast<double>(-INFINITY));
         ImPlot::PlotShaded("Bids", x_asks, y_asks, hist_count, static_cast<double>(-INFINITY));
         ImPlot::EndPlot();
     }
     ImPlot::DestroyContext();
-
-    if (ImGui::ArrowButton("##left1", ImGuiDir_Left)) { hist_grouping--; }
-    ImGui::SameLine(0.0f);
-    if (ImGui::ArrowButton("##right1", ImGuiDir_Right)) { hist_grouping++; }
-    ImGui::SameLine();
-    ImGui::Text("Grouping size: %i", hist_grouping);
-
-    if (ImGui::ArrowButton("##left2", ImGuiDir_Left)) { hist_count = std::max(1, hist_count - 1); }
-    ImGui::SameLine(0.0f);
-    if (ImGui::ArrowButton("##right2", ImGuiDir_Right)) { hist_count = std::min(100, hist_count + 1); }
-    ImGui::SameLine();
-    ImGui::Text("Count per side: %i", hist_count);
 
     ImGui::End();
 }

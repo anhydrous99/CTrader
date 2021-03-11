@@ -25,7 +25,7 @@ class OrderBook {
     int book_grouping = 1;
     int book_count = 12;
     int hist_grouping = 1;
-    int hist_count = 20;
+    int hist_count = 100;
     bool book_first = true;
     bool hist_first = true;
 
