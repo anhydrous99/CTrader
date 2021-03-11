@@ -237,8 +237,8 @@ void OrderBook::display_order_histogram_window() {
             dha_itr++;
         }
         double mid_mark = (displayed_hist_asks.rbegin()->first + displayed_hist_bids.begin()->first) / 2;
-        xmin = static_cast<int>(mid_mark - mid_mark / 100);
-        xmax = static_cast<int>(mid_mark + mid_mark / 100);
+        xmin = static_cast<int>(mid_mark - mid_mark / 50);
+        xmax = static_cast<int>(mid_mark + mid_mark / 50);
         double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(), [](const auto& a, const auto& b) {
             return a.second < b.second;
         })->second;
