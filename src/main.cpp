@@ -81,6 +81,7 @@ int main() {
     bool show_watchlist_window = false;
     bool show_trade_history_window = false;
     bool show_order_book_window = false;
+    bool show_order_histogram_window = false;
 
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -96,6 +97,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("Order Histogram", & show_order_histogram_window);
                 ImGui::Checkbox("Order Book", & show_order_book_window);
                 ImGui::Checkbox("Trade History", & show_trade_history_window);
                 ImGui::Checkbox("WatchList", & show_watchlist_window);
@@ -143,7 +145,9 @@ int main() {
         if (show_trade_history_window)
             tradeHistory.display_trade_history_window();
         if (show_order_book_window)
-            show_order_book_window = !orderBook.display_orderbook_window();
+            show_order_book_window = !orderBook.display_order_book_window();
+        if (show_order_histogram_window)
+            orderBook.display_order_histogram_window();
 
         // Rendering
         ImGui::Render();

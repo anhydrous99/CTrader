@@ -17,21 +17,28 @@ class OrderBook {
     std::shared_mutex bids_mutex;
     std::shared_mutex asks_mutex;
     std::shared_mutex product_mutex;
-    std::chrono::high_resolution_clock::time_point last_t = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point last_book_t = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point last_hist_t = std::chrono::high_resolution_clock::now();
 
     std::map<float, float> displayed_bids;
     std::map<float, float> displayed_asks;
-    int grouping = 1;
-    int count = 10;
+    int book_grouping = 1;
+    int book_count = 12;
+    int hist_grouping = 1;
+    int hist_count = 20;
+    bool book_first = true;
+    bool hist_first = true;
 
+    std::map<float, float> get_best_bids(int n, int grping);
+    std::map<float, float> get_best_asks(int n, int grping);
+    std::map<double, double> get_best_bids_hist(int n, int grping);
+    std::map<double, double> get_best_asks_hist(int n, int grping);
 public:
     explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
     void change_product(const libCTrader::Product &product);
 
-    std::map<float, float> get_best_bids(int n, int grouping);
-    std::map<float, float> get_best_asks(int n, int grouping);
-
-    bool display_orderbook_window();
+    bool display_order_book_window();
+    void display_order_histogram_window();
 };
 
 
