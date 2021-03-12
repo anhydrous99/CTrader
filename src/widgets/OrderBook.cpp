@@ -162,6 +162,48 @@ std::map<double, double> OrderBook::get_best_asks_hist(int n, int grping) {
     return ret;
 }
 
+std::map<double, double> OrderBook::get_best_asks_hist(double stop) {
+    std::shared_lock lock(asks_mutex);
+    std::map<double, double> ret;
+    double last_size = 0;
+    for (const auto& ask : asks) {
+        if (ask.first > stop)
+            break;
+        double new_value = std::stod(ask.second) + last_size;
+        ret[ask.first.get_dbl()] = new_value;
+        last_size = new_value;
+    }
+    return ret;
+}
+
+std::map<double, double> OrderBook::get_best_bids_hist(double stop) {
+    std::shared_lock lock(bids_mutex);
+    std::map<double, double> ret;
+    double last_size = 0;
+    for (const auto& bid : bids) {
+        if (bid.first < stop)
+            break;
+        double new_value = std::stod(bid.second) + last_size;
+        ret[bid.first.get_dbl()] = new_value;
+        last_size = new_value;
+    }
+    return ret;
+}
+
+double OrderBook::mid_market_price() {
+    double best_bid;
+    double best_ask;
+    {
+        std::shared_lock lock(bids_mutex);
+        best_bid = bids.rbegin()->first.get_dbl();
+    }
+    {
+        std::shared_lock lock(asks_mutex);
+        best_ask = asks.begin()->first.get_dbl();
+    }
+    return (best_bid + best_ask) / 2;
+}
+
 
 bool OrderBook::display_order_book_window() {
     bool close = false;
@@ -219,24 +261,28 @@ bool OrderBook::display_order_book_window() {
 }
 
 void OrderBook::display_order_histogram_window() {
-    static double x_bids[100], x_asks[100], y_bids[100], y_asks[100];
-    static int xmin, xmax, ymin = 0, ymax;
+    static double x_bids[500], x_asks[500], y_bids[500], y_asks[500];
+    static int xmin, xmax, ymin = 0, ymax, asks_count, bids_count;
     if (duration_cast<milliseconds>(high_resolution_clock::now() - last_hist_t).count() > 800 || hist_first) {
-        auto displayed_hist_bids = get_best_bids_hist(hist_count, hist_grouping);
-        auto displayed_hist_asks = get_best_asks_hist(hist_count, hist_grouping);
+        double mid_mark = mid_market_price();
+        auto displayed_hist_bids = get_best_bids_hist(mid_mark - mid_mark / 50);
+        auto displayed_hist_asks = get_best_asks_hist(mid_mark + mid_mark / 50);
         auto dhb_itr = displayed_hist_bids.rbegin();
         auto dha_itr = displayed_hist_asks.begin();
-        for (int i = 0; i < displayed_hist_bids.size(); i++) {
+        bids_count = 0;
+        for (int i = 0; i < displayed_hist_bids.size() && i < 500; i++) {
             x_bids[i] = dhb_itr->first;
             y_bids[i] = dhb_itr->second;
+            bids_count++;
             dhb_itr++;
         }
-        for (int i = 0; i < displayed_hist_asks.size(); i++) {
+        asks_count = 0;
+        for (int i = 0; i < displayed_hist_asks.size() && i < 500; i++) {
             x_asks[i] = dha_itr->first;
             y_asks[i] = dha_itr->second;
+            asks_count++;
             dha_itr++;
         }
-        double mid_mark = (displayed_hist_asks.rbegin()->first + displayed_hist_bids.begin()->first) / 2;
         xmin = static_cast<int>(mid_mark - mid_mark / 50);
         xmax = static_cast<int>(mid_mark + mid_mark / 50);
         double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(), [](const auto& a, const auto& b) {
@@ -256,8 +302,8 @@ void OrderBook::display_order_histogram_window() {
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
     if (ImPlot::BeginPlot("Order Histogram", "Price", "Size")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.5f);
-        ImPlot::PlotShaded("Asks", x_bids, y_bids, hist_count, static_cast<double>(-INFINITY));
-        ImPlot::PlotShaded("Bids", x_asks, y_asks, hist_count, static_cast<double>(-INFINITY));
+        ImPlot::PlotShaded("Asks", x_bids, y_bids, bids_count, static_cast<double>(-INFINITY));
+        ImPlot::PlotShaded("Bids", x_asks, y_asks, asks_count, static_cast<double>(-INFINITY));
         ImPlot::EndPlot();
     }
     ImPlot::DestroyContext();

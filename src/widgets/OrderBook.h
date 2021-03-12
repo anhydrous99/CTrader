@@ -24,8 +24,6 @@ class OrderBook {
     std::map<float, float> displayed_asks;
     int book_grouping = 1;
     int book_count = 12;
-    int hist_grouping = 1;
-    int hist_count = 100;
     bool book_first = true;
     bool hist_first = true;
 
@@ -33,6 +31,9 @@ class OrderBook {
     std::map<float, float> get_best_asks(int n, int grping);
     std::map<double, double> get_best_bids_hist(int n, int grping);
     std::map<double, double> get_best_asks_hist(int n, int grping);
+    std::map<double, double> get_best_asks_hist(double stop);
+    std::map<double, double> get_best_bids_hist(double stop);
+    double mid_market_price();
 public:
     explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
     void change_product(const libCTrader::Product &product);
