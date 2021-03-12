@@ -70,7 +70,7 @@ void OrderBook::change_product(const libCTrader::Product &product) {
     websock->add_channel_product_pair("level2", product, 2);
 }
 
-std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
+std::map<float, float> OrderBook::get_best_bids(int n, int grping) {
     std::shared_lock lock(bids_mutex);
     auto begin = bids.rbegin();
     auto end = bids.rend();
@@ -92,7 +92,7 @@ std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
     return ret;
 }
 
-std::map<float, float> OrderBook::get_best_bids(int n, int grping) {
+std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
     std::shared_lock lock(asks_mutex);
     auto begin = asks.begin();
     auto end = asks.end();
@@ -114,7 +114,7 @@ std::map<float, float> OrderBook::get_best_bids(int n, int grping) {
     return ret;
 }
 
-std::map<double, double> OrderBook::get_best_asks_hist(int n, int grping) {
+std::map<double, double> OrderBook::get_best_bids_hist(int n, int grping) {
     std::shared_lock lock(bids_mutex);
     auto begin = bids.rbegin();
     auto end = bids.rend();
@@ -138,7 +138,7 @@ std::map<double, double> OrderBook::get_best_asks_hist(int n, int grping) {
     return ret;
 }
 
-std::map<double, double> OrderBook::get_best_bids_hist(int n, int grping) {
+std::map<double, double> OrderBook::get_best_asks_hist(int n, int grping) {
     std::shared_lock lock(asks_mutex);
     auto begin = asks.begin();
     auto end = asks.end();
@@ -180,22 +180,22 @@ bool OrderBook::display_order_book_window() {
         ImGui::Text("Price");
         ImGui::TableSetColumnIndex(1);
         ImGui::Text("| Market Size");
-        for (auto itr = displayed_bids.rbegin(); itr != displayed_bids.rend(); itr++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(Red, "%f", itr->first);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(Red, "  %f", itr->second);
-        }
-        ImGui::EndTable();
-    }
-    if (ImGui::BeginTable("", 2)) {
         for (auto itr = displayed_asks.rbegin(); itr != displayed_asks.rend(); itr++) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::TextColored(Green, "%f", itr->first);
             ImGui::TableSetColumnIndex(1);
             ImGui::TextColored(Green, "  %f", itr->second);
+        }
+        ImGui::EndTable();
+    }
+    if (ImGui::BeginTable("", 2)) {
+        for (auto itr = displayed_bids.rbegin(); itr != displayed_bids.rend(); itr++) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(Red, "%f", itr->first);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextColored(Red, "  %f", itr->second);
         }
         ImGui::EndTable();
     }
