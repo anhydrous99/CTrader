@@ -6,14 +6,19 @@
 #define CTRADER_ORDERBOOK_H
 
 #include <libCTrader/Websock.h>
-#include <libCTrader/Decimal.h>
 #include <chrono>
 
 class OrderBook {
+    struct cmpByStringDoubleValue {
+        bool operator()(const std::string& a, const std::string& b) const {
+            return std::stod(a) < std::stod(b);
+        }
+    };
+
     libCTrader::Websock *websock;
     libCTrader::Product current_product;
-    std::map<libCTrader::Decimal, std::string> bids;
-    std::map<libCTrader::Decimal, std::string> asks;
+    std::map<std::string, std::string, cmpByStringDoubleValue> bids;
+    std::map<std::string, std::string, cmpByStringDoubleValue> asks;
     std::shared_mutex bids_mutex;
     std::shared_mutex asks_mutex;
     std::shared_mutex product_mutex;
@@ -32,11 +37,11 @@ class OrderBook {
     std::map<double, double> get_best_asks_hist(double stop);
     std::map<double, double> get_best_bids_hist(double stop);
     double mid_market_price();
-    int get_precision();
     int get_bids_size();
     int get_asks_size();
+
 public:
-    explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
+    explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product  product);
     void change_product(const libCTrader::Product &product);
 
     bool display_order_book_window();
