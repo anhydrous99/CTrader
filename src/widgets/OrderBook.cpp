@@ -32,6 +32,7 @@ OrderBook::OrderBook(libCTrader::Websock *websock, libCTrader::Product product) 
                 asks[libCTrader::Decimal(snap.first, current_product.quote_increment)] = snap.second;
             }
         }
+        std::cout << current_product.quote_increment << std::endl;
     });
 
     websock->on_lvl2_update([&](const libCTrader::LVL2Update &update) {
@@ -273,4 +274,14 @@ void OrderBook::display_order_histogram_window() {
 int OrderBook::get_precision() {
     std::shared_lock lock(bids_mutex);
     return bids.begin()->first.precision;
+}
+
+int OrderBook::get_bids_size() {
+    std::shared_lock lock(bids_mutex);
+    return bids.size();
+}
+
+int OrderBook::get_asks_size() {
+    std::shared_lock lock(asks_mutex);
+    return asks.size();
 }

@@ -6,22 +6,22 @@
 #include <iostream>
 
 [[maybe_unused]] libCTrader::Decimal::Decimal(const std::string &value, const std::string &quote_tick_size) {
-    if (quote_tick_size == "0.01") {
+    if (quote_tick_size == "0.01" || quote_tick_size == "0.01000000") {
         precision = 2;
         dec_2 = dec::decimal<2>(value);
-    } else if (quote_tick_size == "0.001") {
+    } else if (quote_tick_size == "0.001" || quote_tick_size == "0.00100000") {
         precision = 3;
         dec_3 = dec::decimal<3>(value);
-    } else if (quote_tick_size == "0.0001") {
+    } else if (quote_tick_size == "0.0001" || quote_tick_size == "0.00010000") {
         precision = 4;
         dec_4 = dec::decimal<4>(value);
-    } else if (quote_tick_size == "0.00001") {
+    } else if (quote_tick_size == "0.00001" || quote_tick_size == "0.00001000") {
         precision = 5;
         dec_5 = dec::decimal<5>(value);
-    } else if (quote_tick_size == "0.000001") {
+    } else if (quote_tick_size == "0.000001" || quote_tick_size == "0.00000100") {
         precision = 6;
         dec_6 = dec::decimal<6>(value);
-    } else if (quote_tick_size == "0.0000001") {
+    } else if (quote_tick_size == "0.0000001" || quote_tick_size == "0.00000010") {
         precision = 7;
         dec_7 = dec::decimal<7>(value);
     } else if (quote_tick_size == "0.00000001") {
