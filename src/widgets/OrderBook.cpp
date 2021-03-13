@@ -271,10 +271,14 @@ void OrderBook::display_order_histogram_window() {
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
     if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.5f);
-        if (asks_count != 0)
+        if (asks_count != 0) {
+            ImPlot::SetNextFillStyle(ImVec4(1.0f, 0.0f, 0.0f, 0.5f));
             ImPlot::PlotShaded("Asks", x_asks.data(), y_asks.data(), asks_count, static_cast<double>(-INFINITY));
-        if (bids_count != 0)
+        }
+        if (bids_count != 0) {
+            ImPlot::SetNextFillStyle(ImVec4(0.0f, 1.0f, 0.0f, 0.5f));
             ImPlot::PlotShaded("Bids", x_bids.data(), y_bids.data(), bids_count, static_cast<double>(-INFINITY));
+        }
         ImPlot::EndPlot();
     }
     ImPlot::DestroyContext();

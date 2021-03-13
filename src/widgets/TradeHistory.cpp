@@ -9,15 +9,20 @@ TradeHistory::TradeHistory(libCTrader::Websock* sock, const libCTrader::Product 
     trade_history(192), websock(sock) {
     websock->add_channel_product_pair("ticker", product, 1);
     websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
-        std::shared_lock lock(current_product_mutex);
-        if (current_product.id == ticker.product_id)
+        std::shared_lock product_lock(current_product_mutex);
+        if (current_product.id == ticker.product_id) {
+            std::unique_lock trade_history_lock(trade_history_mutex);
             trade_history.push(ticker);
+        }
     });
 }
 
 void TradeHistory::change_product(const libCTrader::Product &new_product) {
     trade_history.clear();
-    websock->remove_channel_product_pair("ticker", current_product, 1);
+    {
+        std::shared_lock lock(current_product_mutex);
+        websock->remove_channel_product_pair("ticker", current_product, 1);
+    }
     websock->add_channel_product_pair("ticker", new_product, 1);
     {
         std::unique_lock lock(current_product_mutex);
@@ -36,6 +41,7 @@ void TradeHistory::display_trade_history_window() {
         ImGui::Text("Price");
         ImGui::TableSetColumnIndex(1);
         ImGui::Text("| Trade Size");
+        std::shared_lock trade_history_lock(trade_history_mutex);
         for (int64_t i = trade_history.size() - 1; i >= 0; i--) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
@@ -45,6 +51,7 @@ void TradeHistory::display_trade_history_window() {
             float size = std::stof(trade_history[i].last_size);
             ImGui::Text("  %.8f", size);
         }
+        trade_history_lock.unlock();
         ImGui::EndTable();
     }
     ImGui::End();
