@@ -116,54 +116,6 @@ std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
     return ret;
 }
 
-std::map<double, double> OrderBook::get_best_bids_hist(int n, int grping) {
-    std::shared_lock lock(bids_mutex);
-    auto begin = bids.rbegin();
-    auto end = bids.rend();
-    std::map<double, double> ret;
-    double last_size = 0;
-    for (int i = 0; i < n; i++) {
-        if (begin == end)
-            break;
-        double price = begin->first.get_dbl();
-        double size = std::stod(begin->second) + last_size;
-        for (int j = 1; j < grping; j++) {
-            if (begin == end)
-                break;
-            size += std::stod(begin->second);
-            begin++;
-        }
-        last_size = size;
-        ret[price] = size;
-        begin++;
-    }
-    return ret;
-}
-
-std::map<double, double> OrderBook::get_best_asks_hist(int n, int grping) {
-    std::shared_lock lock(asks_mutex);
-    auto begin = asks.begin();
-    auto end = asks.end();
-    std::map<double, double> ret;
-    double last_size = 0;
-    for (int i = 0; i < n; i++) {
-        if (begin == end)
-            break;
-        double price = begin->first.get_dbl();
-        double size = std::stod(begin->second) + last_size;
-        for (int j = 1; j < grping; j++) {
-            if (begin == end)
-                break;
-            size += std::stod(begin->second);
-            begin++;
-        }
-        last_size = size;
-        ret[price] = size;
-        begin++;
-    }
-    return ret;
-}
-
 std::map<double, double> OrderBook::get_best_asks_hist(double stop) {
     std::shared_lock lock(asks_mutex);
     std::map<double, double> ret;
@@ -269,7 +221,6 @@ void OrderBook::display_order_histogram_window() {
     static int asks_count, bids_count, precision = 2;
     if (duration_cast<milliseconds>(high_resolution_clock::now() - last_hist_t).count() > 800 || hist_first) {
         mid_mark = mid_market_price();
-        precision = get_precision();
         auto displayed_hist_bids = get_best_bids_hist(mid_mark - mid_mark / 50);
         auto displayed_hist_asks = get_best_asks_hist(mid_mark + mid_mark / 50);
         auto dhb_itr = displayed_hist_bids.rbegin();

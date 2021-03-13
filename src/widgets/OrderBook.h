@@ -29,8 +29,6 @@ class OrderBook {
 
     std::map<float, float> get_best_bids(int n, int grping);
     std::map<float, float> get_best_asks(int n, int grping);
-    std::map<double, double> get_best_bids_hist(int n, int grping);
-    std::map<double, double> get_best_asks_hist(int n, int grping);
     std::map<double, double> get_best_asks_hist(double stop);
     std::map<double, double> get_best_bids_hist(double stop);
     double mid_market_price();
