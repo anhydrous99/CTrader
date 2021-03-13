@@ -3,6 +3,8 @@
 //
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include "OrderBook.h"
 #include "implot.h"
 #include "imgui.h"
@@ -262,9 +264,12 @@ bool OrderBook::display_order_book_window() {
 
 void OrderBook::display_order_histogram_window() {
     static double x_bids[500], x_asks[500], y_bids[500], y_asks[500];
-    static double xmin, xmax, ymin = 0, ymax, asks_count, bids_count;
+    static double xmin, xmax, ymax, mid_mark;
+    const static double ymin = 0;
+    static int asks_count, bids_count, precision = 2;
     if (duration_cast<milliseconds>(high_resolution_clock::now() - last_hist_t).count() > 800 || hist_first) {
-        double mid_mark = mid_market_price();
+        mid_mark = mid_market_price();
+        precision = get_precision();
         auto displayed_hist_bids = get_best_bids_hist(mid_mark - mid_mark / 50);
         auto displayed_hist_asks = get_best_asks_hist(mid_mark + mid_mark / 50);
         auto dhb_itr = displayed_hist_bids.rbegin();
@@ -296,11 +301,14 @@ void OrderBook::display_order_histogram_window() {
         hist_first = false;
     }
 
+    std::stringstream price_ss;
+    price_ss << "Price ";
+    price_ss << mid_mark;
 
     ImPlot::CreateContext();
     ImGui::Begin("Order Histogram");
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
-    if (ImPlot::BeginPlot("Order Histogram", "Price", "Size")) {
+    if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size")) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.5f);
         ImPlot::PlotShaded("Asks", x_bids, y_bids, bids_count, static_cast<double>(-INFINITY));
         ImPlot::PlotShaded("Bids", x_asks, y_asks, asks_count, static_cast<double>(-INFINITY));
@@ -309,4 +317,9 @@ void OrderBook::display_order_histogram_window() {
     ImPlot::DestroyContext();
 
     ImGui::End();
+}
+
+int OrderBook::get_precision() {
+    std::shared_lock lock(bids_mutex);
+    return bids.begin()->first.precision;
 }

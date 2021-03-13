@@ -34,6 +34,7 @@ class OrderBook {
     std::map<double, double> get_best_asks_hist(double stop);
     std::map<double, double> get_best_bids_hist(double stop);
     double mid_market_price();
+    int get_precision();
 public:
     explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
     void change_product(const libCTrader::Product &product);
