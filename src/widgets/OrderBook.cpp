@@ -146,16 +146,16 @@ std::map<double, double> OrderBook::get_best_bids_hist(double stop) {
 }
 
 double OrderBook::mid_market_price() {
-    double best_bid;
-    double best_ask;
-    {
-        std::shared_lock lock(bids_mutex);
+    double best_bid = 0.f;
+    double best_ask = 0.f;
+    bids_mutex.lock_shared();
+    asks_mutex.lock_shared();
+    if (!bids.empty() && !asks.empty()) {
         best_bid = std::stod(bids.rbegin()->first);
-    }
-    {
-        std::shared_lock lock(asks_mutex);
         best_ask = std::stod(asks.begin()->first);
     }
+    bids_mutex.unlock_shared();
+    asks_mutex.unlock_shared();
     return (best_bid + best_ask) / 2;
 }
 
@@ -251,13 +251,19 @@ void OrderBook::display_order_histogram_window() {
         }
         xmin = mid_mark - mid_mark / 60;
         xmax = mid_mark + mid_mark / 60;
-        double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(), [](const auto& a, const auto& b) {
-            return a.second < b.second;
-        })->second;
-        double a_max = std::max_element(displayed_hist_asks.begin(), displayed_hist_asks.end(), [](const auto& a, const auto& b) {
-            return a.second < b.second;
-        })->second;
-        ymax = static_cast<int>(std::max(b_max, a_max));
+        if (!displayed_asks.empty() && !displayed_hist_bids.empty()) {
+            double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(),
+                                            [](const auto &a, const auto &b) {
+                                                return a.second < b.second;
+                                            })->second;
+            double a_max = std::max_element(displayed_hist_asks.begin(), displayed_hist_asks.end(),
+                                            [](const auto &a, const auto &b) {
+                                                return a.second < b.second;
+                                            })->second;
+            ymax = static_cast<int>(std::max(b_max, a_max));
+        } else {
+            ymax = 1;
+        }
         last_hist_t = high_resolution_clock::now();
         hist_first = false;
     }

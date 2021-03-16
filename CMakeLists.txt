@@ -16,16 +16,26 @@ include(cmake/nlohmann_json.cmake)
 include(cmake/yaml_cpp.cmake)
 include(cmake/glfw3.cmake)
 include(cmake/glew.cmake)
-include(cmake/curl.cmake)
+if (NOT WIN32)
+    include(cmake/curl.cmake)
+endif ()
 ##
 
 find_package(cpprestsdk REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenSSL REQUIRED)
+if (WIN32)
+    find_package(CURL REQUIRED)
+endif ()
 
 add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader/include)
-target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto libcurl nlohmann_json)
+target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto nlohmann_json)
+if (NOT WIN32)
+    target_link_libraries(libCTrader libcurl)
+else ()
+    target_link_libraries(libCTrader CURL::libcurl)
+endif ()
 set_target_properties(libCTrader PROPERTIES PREFIX "")
 
 # imgui
