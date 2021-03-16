@@ -78,7 +78,7 @@ std::map<float, float> OrderBook::get_best_bids(int n, int grping) {
     auto begin = bids.rbegin();
     auto end = bids.rend();
     std::map<float, float> ret;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < std::min(n, static_cast<int>(bids.size())); i++) {
         if (begin == end)
             break;
         float price = std::stof(begin->first);
@@ -90,7 +90,10 @@ std::map<float, float> OrderBook::get_best_bids(int n, int grping) {
             begin++;
         }
         ret[price] = size;
-        begin++;
+        if (begin == end)
+            break;
+        else
+            begin++;
     }
     return ret;
 }
@@ -100,9 +103,7 @@ std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
     auto begin = asks.begin();
     auto end = asks.end();
     std::map<float, float> ret;
-    for (int i = 0; i < n; i++) {
-        if (begin == end)
-            break;
+    for (int i = 0; i < std::min(n, static_cast<int>(asks.size())); i++) {
         float price = std::stof(begin->first);
         float size = std::stof(begin->second);
         for (int j = 1; j < grping; j++) {
@@ -112,7 +113,10 @@ std::map<float, float> OrderBook::get_best_asks(int n, int grping) {
             begin++;
         }
         ret[price] = size;
-        begin++;
+        if (begin == end)
+            break;
+        else
+            begin++;
     }
     return ret;
 }
@@ -251,7 +255,7 @@ void OrderBook::display_order_histogram_window() {
         }
         xmin = mid_mark - mid_mark / 60;
         xmax = mid_mark + mid_mark / 60;
-        if (!displayed_asks.empty() && !displayed_hist_bids.empty()) {
+        if (!displayed_hist_asks.empty() && !displayed_hist_bids.empty()) {
             double b_max = std::max_element(displayed_hist_bids.begin(), displayed_hist_bids.end(),
                                             [](const auto &a, const auto &b) {
                                                 return a.second < b.second;

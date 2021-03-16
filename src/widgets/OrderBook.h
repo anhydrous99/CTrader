@@ -41,7 +41,7 @@ class OrderBook {
     int get_asks_size();
 
 public:
-    explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product  product);
+    explicit OrderBook(libCTrader::Websock *websock, libCTrader::Product product);
     void change_product(const libCTrader::Product &product);
 
     bool display_order_book_window();
