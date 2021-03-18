@@ -77,6 +77,8 @@ add_executable(CTrader
         src/widgets/TradeHistory.h
         src/widgets/OrderBook.cpp
         src/widgets/OrderBook.h
+        src/widgets/PriceGraph.cpp
+        src/widgets/PriceGraph.h
         ${ImGui}
         ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
