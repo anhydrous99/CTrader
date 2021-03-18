@@ -74,9 +74,8 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
             std::unique_lock lock(tickers_mutex);
             tickers[product_id] = ticker;
         }
-        if (on_ticker)
-            on_ticker(ticker);
-    } else if (j["type"] == "snapshot" && on_lvl2_book_snapshot) {
+        on_ticker_signal(ticker);
+    } else if (j["type"] == "snapshot") {
         std::map<std::string, std::string> bids;
         std::map<std::string, std::string> asks;
         for (const auto& bid : j["bids"])
@@ -88,8 +87,8 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
             bids,
             asks
         };
-        on_lvl2_book_snapshot(snapshot);
-    } else if (j["type"] == "l2update" && on_lvl2_book_update) {
+        on_lvl2_book_snapshot_signal(snapshot);
+    } else if (j["type"] == "l2update") {
         std::vector<std::tuple<std::string, std::string, std::string>> changes;
         for (const auto &change : j["changes"])
             changes.emplace_back(change[0], change[1], change[2]);
@@ -98,7 +97,7 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
             j["time"],
             changes
         };
-        on_lvl2_book_update(update);
+        on_lvl2_book_update_signal(update);
     }
 }
 
@@ -226,7 +225,7 @@ std::map<std::string, libCTrader::WSTicker> libCTrader::Websock::get_tickers() {
 }
 
 void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler) {
-    on_ticker = handler;
+    on_ticker_signal.connect(handler);
 }
 
 bool libCTrader::Websock::is_connected(const std::string &channel, const libCTrader::Product &product) {
@@ -235,9 +234,9 @@ bool libCTrader::Websock::is_connected(const std::string &channel, const libCTra
 }
 
 void libCTrader::Websock::on_lvl2_snapshot(const std::function<void(const LVL2Snapshot &)> &handler) {
-    on_lvl2_book_snapshot = handler;
+    on_lvl2_book_snapshot_signal.connect(handler);
 }
 
 void libCTrader::Websock::on_lvl2_update(const std::function<void(const LVL2Update &)> &handler) {
-    on_lvl2_book_update = handler;
+    on_lvl2_book_update_signal.connect(handler);
 }

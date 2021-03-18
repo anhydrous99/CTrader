@@ -6,9 +6,12 @@
 #define CTRADER_WEBSOCK_H
 
 #include <cpprest/ws_client.h>
-#include <map>
-#include <functional>
+#undef U
+
+#include <boost/signals2.hpp>
 #include <shared_mutex>
+#include <functional>
+#include <map>
 #include "types.h"
 
 namespace libCTrader {
@@ -17,9 +20,12 @@ namespace libCTrader {
         void message_handler(const std::string &msg);
         void send_message(const std::string &msg);
         std::map<std::pair<std::string, Product>, std::vector<int>> channel_product_ids;
-        std::function<void(const WSTicker &)> on_ticker;
-        std::function<void(const LVL2Snapshot&)> on_lvl2_book_snapshot;
-        std::function<void(const LVL2Update&)> on_lvl2_book_update;
+        boost::signals2::signal<void(const WSTicker &)> on_ticker_signal;
+        boost::signals2::signal<void(const LVL2Snapshot &)> on_lvl2_book_snapshot_signal;
+        boost::signals2::signal<void(const LVL2Update &)> on_lvl2_book_update_signal;
+        // std::function<void(const WSTicker &)> on_ticker;
+        // std::function<void(const LVL2Snapshot&)> on_lvl2_book_snapshot;
+        // std::function<void(const LVL2Update&)> on_lvl2_book_update;
         std::string uri;
         bool connected = false;
 
