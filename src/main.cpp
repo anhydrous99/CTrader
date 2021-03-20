@@ -38,6 +38,9 @@ int main() {
     // Create OrderBook class
     OrderBook orderBook(websock, current_product);
 
+    // Create PriceGraph class
+    PriceGraph priceGraph(api, websock);
+
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -82,6 +85,7 @@ int main() {
     bool show_trade_history_window = false;
     bool show_order_book_window = false;
     bool show_order_histogram_window = false;
+    bool show_price_graph_window = false;
 
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -97,6 +101,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("Price Graph", & show_price_graph_window);
                 ImGui::Checkbox("Order Histogram", & show_order_histogram_window);
                 ImGui::Checkbox("Order Book", & show_order_book_window);
                 ImGui::Checkbox("Trade History", & show_trade_history_window);
@@ -148,6 +153,8 @@ int main() {
             show_order_book_window = !orderBook.display_order_book_window();
         if (show_order_histogram_window)
             orderBook.display_order_histogram_window();
+        if (show_price_graph_window)
+            priceGraph.display_price_graph_window();
 
         // Rendering
         ImGui::Render();

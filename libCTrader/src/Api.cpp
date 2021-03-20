@@ -466,6 +466,12 @@ libCTrader::Api::get_historical_candles(const std::string &product_id, const std
     return candles;
 }
 
+std::vector<libCTrader::Candle>
+libCTrader::Api::get_historical_candles(const std::string &product_id, const ptime &start, const ptime &end,
+                                        int granularity) {
+    return get_historical_candles(product_id, boost::posix_time::to_iso_string(start), boost::posix_time::to_iso_string(end), granularity);
+}
+
 std::string libCTrader::Api::get_24hr_stats(const std::string &product_id) {
     return call("GET", false, "/products/" + product_id + "/stats");
 }

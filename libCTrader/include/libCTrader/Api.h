@@ -5,6 +5,7 @@
 #ifndef CTRADER_API_H
 #define CTRADER_API_H
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -12,6 +13,8 @@
 #include "types.h"
 
 namespace libCTrader {
+    using ptime = boost::posix_time::ptime;
+
     class Api {
         Auth *auth;
         std::string uri;
@@ -53,6 +56,8 @@ namespace libCTrader {
         std::vector<Trade> list_latest_trades(const std::string &product_id);
         std::vector<Candle> get_historical_candles(const std::string &product_id, const std::string &start,
                                                  const std::string &end, int granularity);
+        std::vector<Candle> get_historical_candles(const std::string &product_id, const ptime &start, const ptime &end,
+                                                   int granularity);
         std::string get_24hr_stats(const std::string &product_id);
     };
 }
