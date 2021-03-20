@@ -28,7 +28,7 @@ class OrderBook {
     std::map<float, float> displayed_bids;
     std::map<float, float> displayed_asks;
     int book_grouping = 1;
-    int book_count = 12;
+    int book_count = 17;
     bool book_first = true;
     bool hist_first = true;
 

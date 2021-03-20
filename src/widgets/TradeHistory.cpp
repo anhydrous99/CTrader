@@ -34,6 +34,8 @@ void TradeHistory::display_trade_history_window() {
     const static ImVec4 Red(1.0f, 0.0f, 0.0f, 1.0f);
     const static ImVec4 Green{0.0f, 1.0f, 0.0f, 1.0f};
 
+    ImGui::SetNextWindowPos(ImVec2(1065.f,19.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(215.f,701.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Trade History", nullptr, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     if (ImGui::BeginTable("Trade History", 2)) {
         ImGui::TableNextRow();

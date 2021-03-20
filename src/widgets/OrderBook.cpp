@@ -174,6 +174,7 @@ bool OrderBook::display_order_book_window() {
         book_first = false;
     }
 
+    ImGui::SetNextWindowPos(ImVec2(0.f,19.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Order Book", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     if (ImGui::BeginTable("Trade History", 2)) {
         ImGui::TableNextRow();
@@ -277,7 +278,8 @@ void OrderBook::display_order_histogram_window() {
     price_ss << mid_mark;
 
     ImPlot::CreateContext();
-    ImGui::SetNextWindowSize(ImVec2(600.f, 339.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(199.f, 380.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(866.f, 342.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Order Histogram");
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
     if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size")) {
