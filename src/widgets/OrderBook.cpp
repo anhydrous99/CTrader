@@ -277,6 +277,7 @@ void OrderBook::display_order_histogram_window() {
     price_ss << mid_mark;
 
     ImPlot::CreateContext();
+    ImGui::SetNextWindowSize(ImVec2(600.f, 339.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Order Histogram");
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
     if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size")) {
@@ -291,9 +292,8 @@ void OrderBook::display_order_histogram_window() {
         }
         ImPlot::EndPlot();
     }
-    ImPlot::DestroyContext();
-
     ImGui::End();
+    ImPlot::DestroyContext();
 }
 
 int OrderBook::get_bids_size() {
