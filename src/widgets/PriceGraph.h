@@ -10,13 +10,16 @@
 
 
 class PriceGraph {
-    libCTrader::Websock *websock;
     libCTrader::Api *api;
+    libCTrader::Websock *websock;
+    boost::posix_time::time_duration granularity;
+    boost::posix_time::time_duration interval_duration;
     std::vector<libCTrader::Candle> candles;
+    std::string current_product;
 
     void update_candle_vector();
 public:
-    PriceGraph(libCTrader::Api *api, libCTrader::Websock *websock);
+    PriceGraph(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product);
 
     void display_price_graph_window();
 };

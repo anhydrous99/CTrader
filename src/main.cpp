@@ -39,7 +39,7 @@ int main() {
     OrderBook orderBook(websock, current_product);
 
     // Create PriceGraph class
-    PriceGraph priceGraph(api, websock);
+    PriceGraph priceGraph(api, websock, current_product.id);
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
