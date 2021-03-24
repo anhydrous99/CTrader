@@ -51,7 +51,7 @@ void libCTrader::Websock::Connect() {
 
 void libCTrader::Websock::message_handler(const std::string &msg) {
     auto j = json::parse(msg);
-    // std::cout << msg << std::endl;
+    std::cout << msg << std::endl;
     if (j["type"] == "ticker" && j.count("sequence") == 1) {
         std::string product_id = j["product_id"];
         WSTicker ticker{
@@ -70,10 +70,6 @@ void libCTrader::Websock::message_handler(const std::string &msg) {
                 j["high_24h"],
                 j["volume_30d"]
         };
-        {
-            std::unique_lock lock(tickers_mutex);
-            tickers[product_id] = ticker;
-        }
         on_ticker_signal(ticker);
     } else if (j["type"] == "snapshot") {
         std::map<std::string, std::string> bids;
@@ -208,15 +204,6 @@ void libCTrader::Websock::set_uri(const std::string &u) {
 libCTrader::Websock::~Websock() {
     if (connected)
         Disconnect();
-}
-
-libCTrader::WSTicker libCTrader::Websock::get_ticker(const std::string &product_id) {
-    std::shared_lock lock(tickers_mutex);
-    auto itr = tickers.find(product_id);
-    if (itr == tickers.end())
-        return WSTicker();
-    else
-        return itr->second;
 }
 
 void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler) {

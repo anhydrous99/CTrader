@@ -8,7 +8,7 @@ using namespace boost::posix_time;
 
 PriceGraph::PriceGraph(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
     current_product(std::move(current_product)) {
-    update_candle_vector();
+    //update_candle_vector();
 }
 
 void PriceGraph::update_candle_vector() {

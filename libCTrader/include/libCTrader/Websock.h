@@ -47,10 +47,6 @@ namespace libCTrader {
         //! Whether we are connected to the websocket feed
         bool connected = false;
 
-        //! The last ticker, for each product, we are keeping track of
-        std::map<std::string, WSTicker> tickers;
-        std::shared_mutex tickers_mutex;
-
     public:
         explicit Websock(std::string uri);
         ~Websock();
@@ -128,14 +124,6 @@ namespace libCTrader {
          * @return Whether it is connected
          */
         bool is_connected(const std::string &channel, const Product &product);
-
-        /*!
-         * Gets the latest ticker for a product
-         *
-         * @param product_id The product's id
-         * @return The latest ticker
-         */
-        WSTicker get_ticker(const std::string &product_id);
 
         /*!
          * Change the uri

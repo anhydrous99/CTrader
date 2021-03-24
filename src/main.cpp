@@ -30,7 +30,7 @@ int main() {
     websock->Connect();
 
     // Create WatchList class
-    WatchList watchList(websock, products, {product_selection});
+    WatchList watchList(websock, products, {current_product});
 
     // Create tradehistory class
     TradeHistory tradeHistory(websock, current_product);
