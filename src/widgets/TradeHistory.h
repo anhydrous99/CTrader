@@ -11,6 +11,7 @@
 class TradeHistory {
     libCTrader::Websock* websock;
     libCTrader::Product current_product;
+    libCTrader::connection current_connection;
     MaxQueue<libCTrader::WSTicker> trade_history;
     std::shared_mutex current_product_mutex;
     std::shared_mutex trade_history_mutex;

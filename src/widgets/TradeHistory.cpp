@@ -8,16 +8,14 @@
 TradeHistory::TradeHistory(libCTrader::Websock* sock, const libCTrader::Product &product) : current_product(product),
     trade_history(192), websock(sock) {
     websock->add_channel_product_pair("ticker", product, 1);
-    websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
-        std::shared_lock product_lock(current_product_mutex);
-        if (current_product.id == ticker.product_id) {
-            std::unique_lock trade_history_lock(trade_history_mutex);
-            trade_history.push(ticker);
-        }
-    });
+    current_connection = websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
+        std::unique_lock trade_history_lock(trade_history_mutex);
+        trade_history.push(ticker);
+    }, current_product);
 }
 
 void TradeHistory::change_product(const libCTrader::Product &new_product) {
+    current_connection.disconnect();
     trade_history.clear();
     {
         std::shared_lock lock(current_product_mutex);
@@ -28,6 +26,10 @@ void TradeHistory::change_product(const libCTrader::Product &new_product) {
         std::unique_lock lock(current_product_mutex);
         current_product = new_product;
     }
+    current_connection = websock->on_new_ticker([&](const libCTrader::WSTicker& ticker) {
+        std::unique_lock trade_history_lock(trade_history_mutex);
+        trade_history.push(ticker);
+    }, current_product);
 }
 
 void TradeHistory::display_trade_history_window() {

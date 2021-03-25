@@ -210,6 +210,20 @@ void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker 
     on_ticker_signal.connect(handler);
 }
 
+libCTrader::connection libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler,
+                                                          const std::string &product_id) {
+    return on_ticker_signal.connect([=](const WSTicker &ticker) {
+        if (product_id == ticker.product_id) {
+            handler(ticker);
+        }
+    });
+}
+
+libCTrader::connection libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler,
+                                                          const libCTrader::Product &product) {
+    return on_new_ticker(handler, product.id);
+}
+
 bool libCTrader::Websock::is_connected(const std::string &channel, const libCTrader::Product &product) {
     auto itr = channel_product_ids.find(std::make_pair(channel, product));
     return itr != channel_product_ids.end();

@@ -15,6 +15,8 @@
 #include "types.h"
 
 namespace libCTrader {
+    using connection = boost::signals2::connection;
+
     //! Ingests the Coinbase Pro's websocket feed
     class Websock {
         //! Cpprestsdk websocket client
@@ -101,6 +103,24 @@ namespace libCTrader {
          * @param handler A function with the WSTicker class as an input
          */
         void on_new_ticker(const std::function<void(const WSTicker&)> &handler);
+
+        /*!
+         * Adds a handler for when a new ticker comes in for the product with a specific id
+         *
+         * @param handler A function with the WSTicker class as an input
+         * @param product_id The product id to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_new_ticker(const std::function<void(const WSTicker&)> &handler, const std::string &product_id);
+
+        /*!
+         * Adds a handler for when a new ticker comes in for the product with a specific id
+         *
+         * @param handler A function with the WSTicker class as an input
+         * @param product The product to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_new_ticker(const std::function<void(const WSTicker&)> &handler, const Product &product);
 
         /*!
          * Adds a handler for when a snapshot comes in, watch out for thread safety
