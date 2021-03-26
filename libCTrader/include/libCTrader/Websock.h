@@ -130,11 +130,47 @@ namespace libCTrader {
         void on_lvl2_snapshot(const std::function<void(const LVL2Snapshot&)> &handler);
 
         /*!
+         * Adds a handler for when a snapshot comes in for the product with a specific id
+         *
+         * @param handler A function with the LVL2Snapshot class as an input
+         * @param product_id The product id to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_lvl2_snapshot(const std::function<void(const LVL2Snapshot&)> &handler, const std::string &product_id);
+
+        /*!
+         * Adds a handler for when a snapshow comes in for a specific product
+         *
+         * @param handler A function with the LVL2Snapshot class as an input
+         * @param product The product to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_lvl2_snapshot(const std::function<void(const LVL2Snapshot&)> &handler, const Product &product);
+
+        /*!
          * Adds a handler for when an lvl2 update comes in, watch out for thread safety
          *
          * @param handler A function with the LVL2Update class as an input
          */
         void on_lvl2_update(const std::function<void(const LVL2Update&)> &handler);
+
+        /*!
+         * Adds a handler for when a lvl2update comes in for a specific product id
+         *
+         * @param handler A function with the LVL2Update class as an input
+         * @param product_id The product id to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_lvl2_update(const std::function<void(const LVL2Update&)> &handler, const std::string &product_id);
+
+        /*!
+         * Adds a handler for when a lvl2update comes in for a specific product
+         *
+         * @param handler A function with the LVL2Update class as an input
+         * @param product The product to look out for
+         * @return A connection object, for later disconnection
+         */
+        connection on_lvl2_update(const std::function<void(const LVL2Update&)> &handler, const Product &product);
 
         /*!
          * Checks if a channel-product pair is connected
