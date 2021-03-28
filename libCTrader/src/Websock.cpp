@@ -213,9 +213,8 @@ void libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker 
 libCTrader::connection libCTrader::Websock::on_new_ticker(const std::function<void(const WSTicker &)> &handler,
                                                           const std::string &product_id) {
     return on_ticker_signal.connect([=](const WSTicker &ticker) {
-        if (product_id == ticker.product_id) {
+        if (product_id == ticker.product_id)
             handler(ticker);
-        }
     });
 }
 
@@ -235,4 +234,30 @@ void libCTrader::Websock::on_lvl2_snapshot(const std::function<void(const LVL2Sn
 
 void libCTrader::Websock::on_lvl2_update(const std::function<void(const LVL2Update &)> &handler) {
     on_lvl2_book_update_signal.connect(handler);
+}
+
+libCTrader::connection libCTrader::Websock::on_lvl2_snapshot(const std::function<void(const LVL2Snapshot &)> &handler,
+                                                             const std::string &product_id) {
+    return on_lvl2_book_snapshot_signal.connect([=](const LVL2Snapshot &snapshot) {
+        if (snapshot.product_id == product_id)
+            handler(snapshot);
+    });
+}
+
+libCTrader::connection libCTrader::Websock::on_lvl2_snapshot(const std::function<void(const LVL2Snapshot &)> &handler,
+                                                             const libCTrader::Product &product) {
+    return on_lvl2_snapshot(handler, product.id);
+}
+
+libCTrader::connection libCTrader::Websock::on_lvl2_update(const std::function<void(const LVL2Update &)> &handler,
+                                                           const std::string &product_id) {
+    return on_lvl2_book_update_signal.connect([=](const LVL2Update &update) {
+        if (update.product_id == product_id)
+            handler(update);
+    });
+}
+
+libCTrader::connection libCTrader::Websock::on_lvl2_update(const std::function<void(const LVL2Update &)> &handler,
+                                                           const libCTrader::Product &product) {
+    return on_lvl2_update(handler, product.id);
 }
