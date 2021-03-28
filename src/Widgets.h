@@ -5,4 +5,4 @@
 #include "widgets/WatchList.h"
 #include "widgets/TradeHistory.h"
 #include "widgets/OrderBook.h"
-#include "widgets/PriceGraph.h"
+#include "widgets/PriceCharts.h"
