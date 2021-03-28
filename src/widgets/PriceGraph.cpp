@@ -3,6 +3,7 @@
 //
 
 #include "PriceGraph.h"
+#include "imgui.h"
 
 using namespace boost::posix_time;
 
@@ -18,5 +19,7 @@ void PriceGraph::update_candle_vector() {
 }
 
 void PriceGraph::display_price_graph_window() {
+    ImGui::Begin("Price Graph");
 
+    ImGui::End();
 }
