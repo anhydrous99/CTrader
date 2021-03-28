@@ -257,6 +257,8 @@ namespace libCTrader {
         std::vector<Candle> get_historical_candles(const std::string &product_id, const ptime &start, const ptime &end,
                                                    int granularity);
 
+        std::vector<Candle> get_latest_historical_candles(const std::string &product_id, int granularity);
+
         /*!
          * Get the 24 stats for a product
          *

@@ -482,3 +482,11 @@ libCTrader::Api::get_historical_candles(const std::string &product_id, const pti
 std::string libCTrader::Api::get_24hr_stats(const std::string &product_id) {
     return call("GET", false, "/products/" + product_id + "/stats");
 }
+
+std::vector<libCTrader::Candle> libCTrader::Api::get_latest_historical_candles(const std::string &product_id, int granularity) {
+    json json1 = parse_json(call("GET", false, "/products/" + product_id + "/candles?granularity=" + std::to_string(granularity)));
+    std::vector<Candle> candles;
+    for (const auto& j : json1)
+        candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
+    return candles;
+}

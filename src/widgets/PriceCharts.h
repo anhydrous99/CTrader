@@ -13,9 +13,13 @@ class PriceCharts {
     libCTrader::Api *api;
     libCTrader::Websock *websock;
     boost::posix_time::time_duration granularity;
-    boost::posix_time::time_duration interval_duration;
     std::vector<libCTrader::Candle> candles;
     std::string current_product;
+
+    bool show_EMA12 = false;
+    bool show_EMA26 = false;
+    int local_granularity = 3;
+    int local_graph = 0;
 
     void update_candle_vector();
 public:

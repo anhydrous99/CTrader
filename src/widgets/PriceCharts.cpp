@@ -3,27 +3,48 @@
 //
 
 #include "PriceCharts.h"
-#include "implot.h"
 #include "imgui.h"
+#include "implot.h"
+#include "implot_internal.h"
 
 using namespace boost::posix_time;
 
 PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
                                                                                                             current_product(std::move(current_product)) {
-    //update_candle_vector();
+    update_candle_vector();
 }
 
 void PriceCharts::update_candle_vector() {
-    auto now = second_clock::universal_time();
-    auto start = now - interval_duration;
-    candles = api->get_historical_candles(current_product, start, now, granularity.total_seconds());
+
+    switch (local_granularity) {
+        case 0:
+            granularity = boost::posix_time::time_duration(0, 1, 0); // hour, min, sec
+            break;
+        case 1:
+            granularity = boost::posix_time::time_duration(0, 5, 0);
+            break;
+        case 2:
+            granularity = boost::posix_time::time_duration(0, 15, 0);
+            break;
+        case 3:
+            granularity = boost::posix_time::time_duration(1, 0, 0);
+            break;
+        case 4:
+            granularity = boost::posix_time::time_duration(6, 0, 0);
+            break;
+        case 5:
+            granularity = boost::posix_time::time_duration(24, 0, 0);
+            break;
+        default:
+            granularity = boost::posix_time::time_duration(0, 5, 0);
+    }
+    candles = api->get_latest_historical_candles(current_product, granularity.total_seconds());
 }
 
 void PriceCharts::display_price_charts_window() {
-    static bool show_EMA12 = false;
-    static bool show_EMA26 = false;
-    static int local_granularity = 3;
-    static int local_graph = 0;
+    const static ImVec4 bearCol{1.0f, 0.0f, 0.0f, 1.0f}; // Red
+    const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
+    const static double width_percent = 0.25f;
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
     // Menu Bar
@@ -51,7 +72,35 @@ void PriceCharts::display_price_charts_window() {
     }
     ImGui::Spacing();
     ImPlot::CreateContext();
-    if (ImPlot::BeginPlot("Price Charts", "Time", "Price")) {
+    ImPlot::ShowDemoWindow();
+    ImPlot::FitNextPlotAxes();
+    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit)) {
+        ImDrawList* draw_list = ImPlot::GetPlotDrawList();
+        if (ImPlot::BeginItem("PriceCharts")) {
+            double half_width = candles.size() > 1 ? static_cast<double>(candles[0].time - candles[1].time) * width_percent : width_percent;
+            ImPlot::GetCurrentItem();
+            // TODO: custom tool
+
+            // fit data if requested
+            if (ImPlot::FitThisFrame()) {
+                for (const libCTrader::Candle &candle : candles) {
+                    ImPlot::FitPoint(ImPlotPoint(candle.time, candle.low));
+                    ImPlot::FitPoint(ImPlotPoint(candle.time, candle.high));
+                }
+            }
+            // render data
+            for (const libCTrader::Candle &candle : candles) {
+                ImVec2 open_pos = ImPlot::PlotToPixels(candle.time - half_width, candle.open);
+                ImVec2 close_pos = ImPlot::PlotToPixels(candle.time + half_width, candle.close);
+                ImVec2 low_pos = ImPlot::PlotToPixels(candle.time, candle.low);
+                ImVec2 high_pos = ImPlot::PlotToPixels(candle.time, candle.high);
+                auto color = ImGui::GetColorU32(candle.open > candle.close ? bearCol : bullCol);
+                draw_list->AddLine(low_pos, high_pos, color);
+                draw_list->AddRectFilled(open_pos, close_pos, color);
+            }
+
+            ImPlot::EndItem();
+        }
         ImPlot::EndPlot();
     }
     ImPlot::DestroyContext();
