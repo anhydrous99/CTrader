@@ -39,6 +39,10 @@ void PriceCharts::update_candle_vector() {
             granularity = boost::posix_time::time_duration(0, 5, 0);
     }
     candles = api->get_latest_historical_candles(current_product, granularity.total_seconds());
+    std::sort(candles.begin(), candles.end(),
+              [](const libCTrader::Candle& a, const libCTrader::Candle& b) {
+        return a.time < b.time;
+    });
 }
 
 void PriceCharts::display_price_charts_window() {
@@ -71,13 +75,21 @@ void PriceCharts::display_price_charts_window() {
         ImGui::EndMenuBar();
     }
     ImGui::Spacing();
-    ImPlot::CreateContext();
-    ImPlot::ShowDemoWindow();
-    ImPlot::FitNextPlotAxes();
-    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit)) {
+
+    const auto min = std::min_element(candles.begin(), candles.end(),
+                                                 [](const libCTrader::Candle &a, const libCTrader::Candle &b){
+        return a.low < b.low;
+    });
+    const auto max = std::max_element(candles.begin(), candles.end(),
+                                      [](const libCTrader::Candle &a, const libCTrader::Candle &b) {
+        return a.high < b.high;
+    });
+
+    ImPlot::SetNextPlotLimits(candles.front().time, candles.back().time, min->low, max->high);
+    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time)) {
         ImDrawList* draw_list = ImPlot::GetPlotDrawList();
         if (ImPlot::BeginItem("PriceCharts")) {
-            double half_width = candles.size() > 1 ? static_cast<double>(candles[0].time - candles[1].time) * width_percent : width_percent;
+            double half_width = candles.size() > 1 ? static_cast<double>(candles[1].time - candles[0].time) * width_percent : width_percent;
             ImPlot::GetCurrentItem();
             // TODO: custom tool
 
@@ -103,6 +115,5 @@ void PriceCharts::display_price_charts_window() {
         }
         ImPlot::EndPlot();
     }
-    ImPlot::DestroyContext();
     ImGui::End();
 }
