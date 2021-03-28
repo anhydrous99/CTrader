@@ -22,8 +22,8 @@ int main() {
     libCTrader::Websock *websock = settings.get_websock();
     Accounts accounts(api);
     auto products = api->get_products();
-    auto current_product = products[0];
-    int product_selection = 0;
+    auto current_product = products[3];
+    int product_selection = 3;
 
     // Connect websocket to starting product
     websock->add_channel_product_pair("ticker", current_product, 0);

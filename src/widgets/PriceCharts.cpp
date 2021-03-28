@@ -49,6 +49,7 @@ void PriceCharts::display_price_charts_window() {
     const static ImVec4 bearCol{1.0f, 0.0f, 0.0f, 1.0f}; // Red
     const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
     const static double width_percent = 0.25f;
+    static ImPlotLimits range, query, select;
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
     // Menu Bar
@@ -86,7 +87,7 @@ void PriceCharts::display_price_charts_window() {
     });
 
     ImPlot::SetNextPlotLimits(candles.front().time, candles.back().time, min->low, max->high);
-    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time)) {
+    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit)) {
         ImDrawList* draw_list = ImPlot::GetPlotDrawList();
         if (ImPlot::BeginItem("PriceCharts")) {
             double half_width = candles.size() > 1 ? static_cast<double>(candles[1].time - candles[0].time) * width_percent : width_percent;
@@ -96,8 +97,11 @@ void PriceCharts::display_price_charts_window() {
             // fit data if requested
             if (ImPlot::FitThisFrame()) {
                 for (const libCTrader::Candle &candle : candles) {
-                    ImPlot::FitPoint(ImPlotPoint(candle.time, candle.low));
-                    ImPlot::FitPoint(ImPlotPoint(candle.time, candle.high));
+                    // Only fit data in the viewport
+                    if (range.X.Min < candle.time && candle.time < range.X.Max) {
+                        ImPlot::FitPoint(ImPlotPoint(candle.time, candle.low));
+                        ImPlot::FitPoint(ImPlotPoint(candle.time, candle.high));
+                    }
                 }
             }
             // render data
@@ -113,6 +117,8 @@ void PriceCharts::display_price_charts_window() {
 
             ImPlot::EndItem();
         }
+        // Get current viewport range
+        range  = ImPlot::GetPlotLimits();
         ImPlot::EndPlot();
     }
     ImGui::End();
