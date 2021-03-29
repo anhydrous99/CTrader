@@ -211,6 +211,7 @@ namespace libCTrader {
         float volume;
 
         Candle(uint64_t time, float low, float high, float open, float close, float volume);
+        Candle() = default;
     };
 
     struct LVL2Snapshot {

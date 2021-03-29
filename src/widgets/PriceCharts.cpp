@@ -15,7 +15,8 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
 }
 
 void PriceCharts::update_candle_vector() {
-
+    min_value = -INFINITY;
+    max_value = INFINITY;
     switch (local_granularity) {
         case 0:
             granularity = boost::posix_time::time_duration(0, 1, 0); // hour, min, sec
@@ -38,11 +39,14 @@ void PriceCharts::update_candle_vector() {
         default:
             granularity = boost::posix_time::time_duration(0, 5, 0);
     }
-    candles = api->get_latest_historical_candles(current_product, granularity.total_seconds());
-    std::sort(candles.begin(), candles.end(),
-              [](const libCTrader::Candle& a, const libCTrader::Candle& b) {
-        return a.time < b.time;
-    });
+    auto candles_vec = api->get_latest_historical_candles(current_product, granularity.total_seconds());
+    for (const auto &candle : candles_vec) {
+        candles[candle.time] = candle;
+        if (candle.low < min_value)
+            min_value = candle.low;
+        if (candle.high > max_value)
+            max_value = candle.high;
+    }
 }
 
 void PriceCharts::display_price_charts_window() {
@@ -77,40 +81,44 @@ void PriceCharts::display_price_charts_window() {
     }
     ImGui::Spacing();
 
-    const auto min = std::min_element(candles.begin(), candles.end(),
-                                                 [](const libCTrader::Candle &a, const libCTrader::Candle &b){
-        return a.low < b.low;
-    });
-    const auto max = std::max_element(candles.begin(), candles.end(),
-                                      [](const libCTrader::Candle &a, const libCTrader::Candle &b) {
-        return a.high < b.high;
-    });
-
-    ImPlot::SetNextPlotLimits(candles.front().time, candles.back().time, min->low, max->high);
+    ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first), min_value, max_value);
     if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit)) {
         ImDrawList* draw_list = ImPlot::GetPlotDrawList();
         if (ImPlot::BeginItem("PriceCharts")) {
-            double half_width = candles.size() > 1 ? static_cast<double>(candles[1].time - candles[0].time) * width_percent : width_percent;
+            double half_width = candles.size() > 1 ? static_cast<double>(std::next(candles.begin())->first - candles.begin()->first) * width_percent : width_percent;
             ImPlot::GetCurrentItem();
-            // TODO: custom tool
+
+            // custom tool
+            if (ImPlot::IsPlotHovered()) {
+                ImPlotPoint mouse = ImPlot::GetPlotMousePos();
+                mouse.x = ImPlot::RoundTime(ImPlotTime::FromDouble(mouse.x), ImPlotTimeUnit_Day).ToDouble();
+                float tool_l = ImPlot::PlotToPixels(mouse.x - half_width * 1.5, mouse.y).x;
+                float tool_r = ImPlot::PlotToPixels(mouse.x + half_width * 1.5, mouse.y).x;
+                float tool_t = ImPlot::GetPlotPos().y;
+                float tool_b = tool_t + ImPlot::GetPlotSize().y;
+                ImPlot::PushPlotClipRect();
+                draw_list->AddRectFilled(ImVec2(tool_l, tool_t), ImVec2(tool_r, tool_b), IM_COL32(128, 128, 128, 64));
+                ImPlot::PopPlotClipRect();
+                // find mouse location index
+            }
 
             // fit data if requested
             if (ImPlot::FitThisFrame()) {
-                for (const libCTrader::Candle &candle : candles) {
+                for (const auto& candle_pair : candles) {
                     // Only fit data in the viewport
-                    if (range.X.Min < candle.time && candle.time < range.X.Max) {
-                        ImPlot::FitPoint(ImPlotPoint(candle.time, candle.low));
-                        ImPlot::FitPoint(ImPlotPoint(candle.time, candle.high));
+                    if (range.X.Min < static_cast<double>(candle_pair.first) && static_cast<double>(candle_pair.first) < range.X.Max) {
+                        ImPlot::FitPoint(ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.low));
+                        ImPlot::FitPoint(ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.high));
                     }
                 }
             }
             // render data
-            for (const libCTrader::Candle &candle : candles) {
-                ImVec2 open_pos = ImPlot::PlotToPixels(candle.time - half_width, candle.open);
-                ImVec2 close_pos = ImPlot::PlotToPixels(candle.time + half_width, candle.close);
-                ImVec2 low_pos = ImPlot::PlotToPixels(candle.time, candle.low);
-                ImVec2 high_pos = ImPlot::PlotToPixels(candle.time, candle.high);
-                auto color = ImGui::GetColorU32(candle.open > candle.close ? bearCol : bullCol);
+            for (const auto& candle_pair : candles) {
+                ImVec2 open_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) - half_width, candle_pair.second.open);
+                ImVec2 close_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) + half_width, candle_pair.second.close);
+                ImVec2 low_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first), candle_pair.second.low);
+                ImVec2 high_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first), candle_pair.second.high);
+                auto color = ImGui::GetColorU32(candle_pair.second.open > candle_pair.second.close ? bearCol : bullCol);
                 draw_list->AddLine(low_pos, high_pos, color);
                 draw_list->AddRectFilled(open_pos, close_pos, color);
             }

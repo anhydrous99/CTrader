@@ -7,13 +7,15 @@
 
 #include <libCTrader/Api.h>
 #include <libCTrader/Websock.h>
+#include <map>
 
 
 class PriceCharts {
     libCTrader::Api *api;
     libCTrader::Websock *websock;
     boost::posix_time::time_duration granularity;
-    std::vector<libCTrader::Candle> candles;
+    std::map<uint64_t, libCTrader::Candle> candles;
+    float max_value = -INFINITY, min_value = INFINITY;
     std::string current_product;
 
     bool show_EMA12 = false;
