@@ -20,7 +20,7 @@ class PriceCharts {
 
     bool show_EMA12 = false;
     bool show_EMA26 = false;
-    int local_granularity = 3;
+    int local_granularity = 2;
     int local_graph = 0;
 
     void update_candle_vector();

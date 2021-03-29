@@ -91,7 +91,27 @@ void PriceCharts::display_price_charts_window() {
             // custom tool
             if (ImPlot::IsPlotHovered()) {
                 ImPlotPoint mouse = ImPlot::GetPlotMousePos();
-                mouse.x = ImPlot::RoundTime(ImPlotTime::FromDouble(mouse.x), ImPlotTimeUnit_Day).ToDouble();
+
+                // Pick the unit
+                ImPlotTimeUnit_ unit;
+                switch (local_granularity) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        unit = ImPlotTimeUnit_Min;
+                        break;
+                    case 3:
+                    case 4:
+                        unit = ImPlotTimeUnit_Hr;
+                        break;
+                    case 5:
+                        unit = ImPlotTimeUnit_Day;
+                        break;
+                    default:
+                        unit = ImPlotTimeUnit_Min;
+                }
+
+                mouse.x = ImPlot::RoundTime(ImPlotTime::FromDouble(mouse.x), unit).ToDouble();
                 float tool_l = ImPlot::PlotToPixels(mouse.x - half_width * 1.5, mouse.y).x;
                 float tool_r = ImPlot::PlotToPixels(mouse.x + half_width * 1.5, mouse.y).x;
                 float tool_t = ImPlot::GetPlotPos().y;
@@ -100,6 +120,22 @@ void PriceCharts::display_price_charts_window() {
                 draw_list->AddRectFilled(ImVec2(tool_l, tool_t), ImVec2(tool_r, tool_b), IM_COL32(128, 128, 128, 64));
                 ImPlot::PopPlotClipRect();
                 // find mouse location index
+                // const auto itr = candles.find(mouse.x);
+                const auto itr = std::lower_bound(candles.begin(), candles.end(), mouse.x,
+                                                  [](const std::pair<uint64_t, libCTrader::Candle>& a, double value) {
+                    return a.first < value;
+                });
+                if (itr != candles.end()) {
+                    ImGui::BeginTooltip();
+                    char buff[32];
+                    ImPlot::FormatDateTime(ImPlotTime::FromDouble(static_cast<double>(itr->first)), buff, 32, ImPlotDateTimeFmt(ImPlotDateFmt_DayMoYr, ImPlotTimeFmt_HrMin, false, true));
+                    ImGui::Text("DateTime: %s", buff);
+                    ImGui::Text("Open:    $%.2f", itr->second.open);
+                    ImGui::Text("Close:   $%.2f", itr->second.close);
+                    ImGui::Text("Low:     $%.2f", itr->second.low);
+                    ImGui::Text("High:    $%.2f", itr->second.high);
+                    ImGui::EndTooltip();
+                }
             }
 
             // fit data if requested
