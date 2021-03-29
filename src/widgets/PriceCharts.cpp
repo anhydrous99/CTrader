@@ -17,6 +17,7 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
 void PriceCharts::update_candle_vector() {
     min_value = -INFINITY;
     max_value = INFINITY;
+    candles.clear();
     switch (local_granularity) {
         case 0:
             granularity = boost::posix_time::time_duration(0, 1, 0); // hour, min, sec
@@ -53,7 +54,9 @@ void PriceCharts::display_price_charts_window() {
     const static ImVec4 bearCol{1.0f, 0.0f, 0.0f, 1.0f}; // Red
     const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
     const static double width_percent = 0.25f;
+    static int last_local_granularity = local_granularity;
     static ImPlotLimits range, query, select;
+    bool fit_y = false;
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
     // Menu Bar
@@ -79,6 +82,15 @@ void PriceCharts::display_price_charts_window() {
         }
         ImGui::EndMenuBar();
     }
+
+    // If granularity has been changed
+    if (last_local_granularity != local_granularity) {
+        last_local_granularity = local_granularity;
+        update_candle_vector();
+        fit_y = true;
+        ImPlot::FitNextPlotAxes();
+    }
+
     ImGui::Spacing();
 
     ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first), min_value, max_value);
@@ -120,7 +132,6 @@ void PriceCharts::display_price_charts_window() {
                 draw_list->AddRectFilled(ImVec2(tool_l, tool_t), ImVec2(tool_r, tool_b), IM_COL32(128, 128, 128, 64));
                 ImPlot::PopPlotClipRect();
                 // find mouse location index
-                // const auto itr = candles.find(mouse.x);
                 const auto itr = std::lower_bound(candles.begin(), candles.end(), mouse.x,
                                                   [](const std::pair<uint64_t, libCTrader::Candle>& a, double value) {
                     return a.first < value;
@@ -140,14 +151,25 @@ void PriceCharts::display_price_charts_window() {
 
             // fit data if requested
             if (ImPlot::FitThisFrame()) {
-                for (const auto& candle_pair : candles) {
+                for (const auto &candle_pair : candles) {
                     // Only fit data in the viewport
-                    if (range.X.Min < static_cast<double>(candle_pair.first) && static_cast<double>(candle_pair.first) < range.X.Max) {
-                        ImPlot::FitPoint(ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.low));
-                        ImPlot::FitPoint(ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.high));
+                    if (!fit_y) {
+                        if (range.X.Min < static_cast<double>(candle_pair.first) &&
+                            static_cast<double>(candle_pair.first) < range.X.Max) {
+                            ImPlot::FitPoint(
+                                    ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.low));
+                            ImPlot::FitPoint(
+                                    ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.high));
+                        }
+                    } else {
+                        ImPlot::FitPoint(
+                                ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.low));
+                        ImPlot::FitPoint(
+                                ImPlotPoint(static_cast<double>(candle_pair.first), candle_pair.second.high));
                     }
                 }
             }
+
             // render data
             for (const auto& candle_pair : candles) {
                 ImVec2 open_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) - half_width, candle_pair.second.open);
