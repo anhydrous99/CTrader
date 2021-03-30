@@ -15,6 +15,8 @@ class PriceCharts {
     libCTrader::Websock *websock;
     boost::posix_time::time_duration granularity;
     std::map<uint64_t, libCTrader::Candle> candles;
+    std::vector<double> closing_prices;
+    std::vector<double> times;
     float max_value = -INFINITY, min_value = INFINITY;
     std::string current_product;
 
