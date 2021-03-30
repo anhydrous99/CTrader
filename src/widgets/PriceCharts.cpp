@@ -9,6 +9,10 @@
 
 using namespace boost::posix_time;
 
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity,
+                       double width_percent, bool fit_y, const ImVec4 &bullCol, const ImVec4 &bearCol);
+void plot_line_graph();
+
 PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
                                                                                                             current_product(std::move(current_product)) {
     update_candle_vector();
@@ -55,7 +59,6 @@ void PriceCharts::display_price_charts_window() {
     const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
     const static double width_percent = 0.25f;
     static int last_local_granularity = local_granularity;
-    static ImPlotLimits range, query, select;
     bool fit_y = false;
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
@@ -94,6 +97,20 @@ void PriceCharts::display_price_charts_window() {
     ImGui::Spacing();
 
     ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first), min_value, max_value);
+    switch (local_graph) {
+        case 1:
+            // Plot Line Graph
+        case 0:
+        default:
+            // Plot Candlestick Graph
+            plot_candlestick_graph(candles, local_granularity, width_percent, fit_y, bullCol, bearCol);
+    }
+    ImGui::End();
+}
+
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity,
+                       double width_percent, bool fit_y, const ImVec4 &bullCol, const ImVec4 &bearCol) {
+    static ImPlotLimits range;
     if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit)) {
         ImDrawList* draw_list = ImPlot::GetPlotDrawList();
         if (ImPlot::BeginItem("PriceCharts")) {
@@ -134,8 +151,8 @@ void PriceCharts::display_price_charts_window() {
                 // find mouse location index
                 const auto itr = std::lower_bound(candles.begin(), candles.end(), mouse.x,
                                                   [](const std::pair<uint64_t, libCTrader::Candle>& a, double value) {
-                    return a.first < value;
-                });
+                                                      return a.first < value;
+                                                  });
                 if (itr != candles.end()) {
                     ImGui::BeginTooltip();
                     char buff[32];
@@ -184,8 +201,7 @@ void PriceCharts::display_price_charts_window() {
             ImPlot::EndItem();
         }
         // Get current viewport range
-        range  = ImPlot::GetPlotLimits();
+        range = ImPlot::GetPlotLimits();
         ImPlot::EndPlot();
     }
-    ImGui::End();
 }
