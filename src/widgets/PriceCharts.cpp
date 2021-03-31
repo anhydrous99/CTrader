@@ -9,7 +9,7 @@
 
 using namespace boost::posix_time;
 
-void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit_y, const ImVec4 &bullCol, const ImVec4 &bearCol);
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol);
 
 PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
                                                                                                             current_product(std::move(current_product)) {
@@ -23,6 +23,7 @@ void PriceCharts::update_candle_vector() {
     closing_prices.clear();
     ema12_prices.clear();
     ema26_prices.clear();
+    times.clear();
     switch (local_granularity) {
         case 0:
             granularity = boost::posix_time::time_duration(0, 1, 0); // hour, min, sec
@@ -64,6 +65,7 @@ void PriceCharts::update_candle_vector() {
         if (candles_vec[i].high > max_value)
             max_value = candles_vec[i].high;
     }
+    fit_graph = true;
 }
 
 void PriceCharts::display_price_charts_window() {
@@ -71,7 +73,6 @@ void PriceCharts::display_price_charts_window() {
     const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
     const static double width_percent = 0.333f;
     static int last_local_granularity = local_granularity;
-    bool fit_y = false;
     ImGui::SetNextWindowPos(ImVec2(199.f,19.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(866.f,362.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
@@ -104,8 +105,13 @@ void PriceCharts::display_price_charts_window() {
     if (last_local_granularity != local_granularity) {
         last_local_granularity = local_granularity;
         update_candle_vector();
-        fit_y = true;
+    }
+
+    bool fit = false;
+    if (fit_graph) {
         ImPlot::FitNextPlotAxes();
+        fit = true;
+        fit_graph = false;
     }
 
     ImGui::Spacing();
@@ -116,12 +122,12 @@ void PriceCharts::display_price_charts_window() {
             case 1:
                 // Plot Line Graph
                 ImPlot::SetNextLineStyle(ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-                ImPlot::PlotLine("Line Graph", times.data(), closing_prices.data(), closing_prices.size());
+                ImPlot::PlotLine("Price", times.data(), closing_prices.data(), closing_prices.size());
                 break;
             case 0:
             default:
                 // Plot Candlestick Graph
-                plot_candlestick_graph(candles, local_granularity, width_percent, fit_y, bullCol, bearCol);
+                plot_candlestick_graph(candles, local_granularity, width_percent, fit, bullCol, bearCol);
         }
 
         if (show_EMA12)
@@ -139,14 +145,14 @@ void PriceCharts::change_product(const std::string &new_product_id) {
     update_candle_vector();
 }
 
-void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit_y, const ImVec4 &bullCol, const ImVec4 &bearCol) {
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol) {
     // Get draw list
     ImDrawList* draw_list = ImPlot::GetPlotDrawList();
     // Get current viewport range
     static ImPlotLimits range;
     range = ImPlot::GetPlotLimits();
 
-    if (ImPlot::BeginItem("Candlestick Graph")) {
+    if (ImPlot::BeginItem("")) {
         double half_width = candles.size() > 1 ? static_cast<double>(std::next(candles.begin())->first - candles.begin()->first) * width_percent : width_percent;
         ImPlot::GetCurrentItem();
 
@@ -203,7 +209,7 @@ void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candle
         if (ImPlot::FitThisFrame()) {
             for (const auto &candle_pair : candles) {
                 // Only fit data in the viewport
-                if (!fit_y) {
+                if (!fit) {
                     if (range.X.Min < static_cast<double>(candle_pair.first) &&
                         static_cast<double>(candle_pair.first) < range.X.Max) {
                         ImPlot::FitPoint(

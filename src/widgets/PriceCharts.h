@@ -24,6 +24,7 @@ class PriceCharts {
 
     bool show_EMA12 = false;
     bool show_EMA26 = false;
+    bool fit_graph = false;
     int local_granularity = 2;
     int local_graph = 0;
 
