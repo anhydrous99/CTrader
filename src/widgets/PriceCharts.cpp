@@ -20,6 +20,9 @@ void PriceCharts::update_candle_vector() {
     min_value = -INFINITY;
     max_value = INFINITY;
     candles.clear();
+    closing_prices.clear();
+    ema12_prices.clear();
+    ema26_prices.clear();
     switch (local_granularity) {
         case 0:
             granularity = boost::posix_time::time_duration(0, 1, 0); // hour, min, sec
@@ -43,14 +46,23 @@ void PriceCharts::update_candle_vector() {
             granularity = boost::posix_time::time_duration(0, 5, 0);
     }
     auto candles_vec = api->get_latest_historical_candles(current_product, granularity.total_seconds());
-    for (const auto &candle : candles_vec) {
-        candles[candle.time] = candle;
-        closing_prices.push_back(candle.close);
-        times.push_back(candle.time);
-        if (candle.low < min_value)
-            min_value = candle.low;
-        if (candle.high > max_value)
-            max_value = candle.high;
+    for (std::size_t i = 0; i < candles_vec.size(); i++) {
+        candles[candles_vec[i].time] = candles_vec[i];
+        closing_prices.push_back(candles_vec[i].close);
+        times.push_back(candles_vec[i].time);
+
+        if (i == 0) {
+            ema12_prices.push_back(candles_vec[i].close);
+            ema26_prices.push_back(candles_vec[i].close);
+        } else {
+            ema12_prices.push_back(2 * (candles_vec[i].close - ema12_prices[i - 1]) / 13 + ema12_prices[i - 1]);
+            ema26_prices.push_back(2 * (candles_vec[i].close - ema26_prices[i - 1]) / 27 + ema26_prices[i - 1]);
+        }
+
+        if (candles_vec[i].low < min_value)
+            min_value = candles_vec[i].low;
+        if (candles_vec[i].high > max_value)
+            max_value = candles_vec[i].high;
     }
 }
 
@@ -60,6 +72,8 @@ void PriceCharts::display_price_charts_window() {
     const static double width_percent = 0.333f;
     static int last_local_granularity = local_granularity;
     bool fit_y = false;
+    ImGui::SetNextWindowPos(ImVec2(199.f,19.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(866.f,362.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
     // Menu Bar
@@ -109,9 +123,20 @@ void PriceCharts::display_price_charts_window() {
                 // Plot Candlestick Graph
                 plot_candlestick_graph(candles, local_granularity, width_percent, fit_y, bullCol, bearCol);
         }
+
+        if (show_EMA12)
+            ImPlot::PlotLine("EMA12", times.data(), ema12_prices.data(), ema12_prices.size());
+        if (show_EMA26)
+            ImPlot::PlotLine("EMA26", times.data(), ema26_prices.data(), ema26_prices.size());
+
         ImPlot::EndPlot();
     }
     ImGui::End();
+}
+
+void PriceCharts::change_product(const std::string &new_product_id) {
+    current_product = new_product_id;
+    update_candle_vector();
 }
 
 void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit_y, const ImVec4 &bullCol, const ImVec4 &bearCol) {

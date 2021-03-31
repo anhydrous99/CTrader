@@ -51,7 +51,7 @@ void libCTrader::Websock::Connect() {
 
 void libCTrader::Websock::message_handler(const std::string &msg) {
     auto j = json::parse(msg);
-    std::cout << msg << std::endl;
+    // std::cout << msg << std::endl;
     if (j["type"] == "ticker" && j.count("sequence") == 1) {
         std::string product_id = j["product_id"];
         WSTicker ticker{

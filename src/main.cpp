@@ -22,13 +22,13 @@ int main() {
     libCTrader::Websock *websock = settings.get_websock();
     Accounts accounts(api);
     auto products = api->get_products();
-    auto current_product = products[3];
-    int product_selection = 3;
+    auto current_product = products[0];
+    int product_selection = 0;
 
     // Connect websocket to starting product
     websock->add_channel_product_pair("ticker", current_product, 0);
     websock->add_channel_product_pair("level2", current_product, 2);
-    // websock->Connect();
+    websock->Connect();
 
     // Create WatchList class
     WatchList watchList(websock, products, {current_product});
@@ -142,7 +142,7 @@ int main() {
             current_product = products[product_selection];
             tradeHistory.change_product(current_product);
             orderBook.change_product(current_product);
-            // TODO
+            priceGraph.change_product(current_product.id);
             new_product_selected = false;
         }
         // Show watch list window
@@ -171,7 +171,7 @@ int main() {
     }
 
     // Cleanup
-    // websock->Disconnect();
+    websock->Disconnect();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();
