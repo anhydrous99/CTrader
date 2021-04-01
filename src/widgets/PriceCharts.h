@@ -21,6 +21,7 @@ class PriceCharts {
     std::vector<double> volume;
     std::vector<double> times;
     float max_value = -INFINITY, min_value = INFINITY;
+    libCTrader::connection current_connection;
     std::string current_product;
 
     bool show_EMA12 = false;

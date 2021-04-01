@@ -14,6 +14,16 @@ void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candle
 PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
                                                                                                             current_product(std::move(current_product)) {
     update_candle_vector();
+    current_connection = websock->on_new_ticker(
+        [&](const libCTrader::WSTicker &ticker) {
+            double last_ticker_time = times.back();
+            double current_time = libCTrader::Api::get_timestamp<double>();
+            if (current_time - last_ticker_time > granularity.total_seconds()) {
+                // Start new ticker
+            } else {
+                // Update current ticker
+            }
+        }, current_product);
 }
 
 void PriceCharts::update_candle_vector() {

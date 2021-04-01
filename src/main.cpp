@@ -28,7 +28,7 @@ int main() {
     // Connect websocket to starting product
     websock->add_channel_product_pair("ticker", current_product, 0);
     websock->add_channel_product_pair("level2", current_product, 2);
-    // websock->Connect();
+    websock->Connect();
 
     // Create WatchList class
     WatchList watchList(websock, products, {current_product});
@@ -171,7 +171,7 @@ int main() {
     }
 
     // Cleanup
-    // websock->Disconnect();
+    websock->Disconnect();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();

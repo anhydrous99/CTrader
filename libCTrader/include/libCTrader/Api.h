@@ -44,13 +44,6 @@ namespace libCTrader {
         std::string call(const std::string &method, bool authed, const std::string &path);
 
         /*!
-         * Creates a UNIX Timestamp (number of seconds from Epoch Time)
-         *
-         * @return Our timestamp
-         */
-        static std::string GetTimestamp();
-
-        /*!
          * Creates url tags
          *
          * @param args The fields & values
@@ -266,7 +259,23 @@ namespace libCTrader {
          * @return The 24 stats
          */
         std::string get_24hr_stats(const std::string &product_id);
+
+        /*!
+         * Creates a UNIX Timestamp (number of seconds from Epoch Time)
+         *
+         * @return Our timestamp
+         */
+        template<typename T>
+        static T get_timestamp();
+        static std::string get_timestamp();
     };
+
+    // Template Implementations
+
+    template<typename T>
+    T Api::get_timestamp() {
+        return time(nullptr);
+    }
 }
 
 

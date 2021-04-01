@@ -45,7 +45,7 @@ std::string libCTrader::Api::call(const std::string &method, bool authed, const 
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         chunk = curl_slist_append(chunk, "Content-Type: application/json");
         if (authed) {
-            std::string time_stamp = GetTimestamp();
+            std::string time_stamp = get_timestamp();
             std::string sign = auth->Sign(time_stamp, method, path, body);
             chunk = curl_slist_append(chunk, ("CB-ACCESS-KEY: " + auth->Key).c_str());
             chunk = curl_slist_append(chunk, ("CB-ACCESS-SIGN: " + sign).c_str());
@@ -76,7 +76,7 @@ std::string libCTrader::Api::call(const std::string &method, bool authed, const 
     return call(method, authed, path, "");
 }
 
-std::string libCTrader::Api::GetTimestamp() {
+std::string libCTrader::Api::get_timestamp() {
     time_t t = time(nullptr);
     return std::to_string(t);
 }
