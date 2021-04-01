@@ -18,6 +18,7 @@ class PriceCharts {
     std::vector<double> closing_prices;
     std::vector<double> ema12_prices;
     std::vector<double> ema26_prices;
+    std::vector<double> volume;
     std::vector<double> times;
     float max_value = -INFINITY, min_value = INFINITY;
     std::string current_product;

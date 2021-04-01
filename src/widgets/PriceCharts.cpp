@@ -23,6 +23,7 @@ void PriceCharts::update_candle_vector() {
     closing_prices.clear();
     ema12_prices.clear();
     ema26_prices.clear();
+    volume.clear();
     times.clear();
     switch (local_granularity) {
         case 0:
@@ -50,6 +51,7 @@ void PriceCharts::update_candle_vector() {
     for (std::size_t i = 0; i < candles_vec.size(); i++) {
         candles[candles_vec[i].time] = candles_vec[i];
         closing_prices.push_back(candles_vec[i].close);
+        volume.push_back(candles_vec[i].volume);
         times.push_back(candles_vec[i].time);
 
         if (i == 0) {
@@ -196,11 +198,12 @@ void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candle
                 ImGui::BeginTooltip();
                 char buff[32];
                 ImPlot::FormatDateTime(ImPlotTime::FromDouble(static_cast<double>(itr->first)), buff, 32, ImPlotDateTimeFmt(ImPlotDateFmt_DayMoYr, ImPlotTimeFmt_HrMin, false, true));
-                ImGui::Text("DateTime: %s", buff);
-                ImGui::Text("Open:    $%.2f", itr->second.open);
-                ImGui::Text("Close:   $%.2f", itr->second.close);
-                ImGui::Text("Low:     $%.2f", itr->second.low);
-                ImGui::Text("High:    $%.2f", itr->second.high);
+                ImGui::Text("D:  %s", buff);
+                ImGui::Text("O: $%.2f", itr->second.open);
+                ImGui::Text("C: $%.2f", itr->second.close);
+                ImGui::Text("L: $%.2f", itr->second.low);
+                ImGui::Text("H: $%.2f", itr->second.high);
+                ImGui::Text("V:  %.3f", itr->second.volume);
                 ImGui::EndTooltip();
             }
         }
