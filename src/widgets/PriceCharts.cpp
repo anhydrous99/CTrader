@@ -12,22 +12,35 @@ using namespace boost::posix_time;
 void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol);
 
 PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
-                                                                                                            current_product(std::move(current_product)) {
+                                                                                                            _current_product(std::move(current_product)) {
     update_candle_vector();
-    current_connection = websock->on_new_ticker(
+    websock->on_new_ticker(
         [&](const libCTrader::WSTicker &ticker) {
-            double last_ticker_time = times.back();
-            double current_time = libCTrader::Api::get_timestamp<double>();
-            if (current_time - last_ticker_time > granularity.total_seconds()) {
-                // Start new ticker
-            } else {
-                // Update current ticker
+            if (ticker.product_id == _current_product) {
+                double last_ticker_time = times.back();
+                auto current_time = libCTrader::Api::get_timestamp<uint64_t>();
+                double price = std::stod(ticker.price);
+                if (current_time - last_ticker_time > granularity.total_seconds()) {
+                    // Start new ticker
+                    candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, 0.0);
+                    times.push_back(current_time);
+                    closing_prices.push_back(price);
+                } else {
+                    // Update current ticker
+                    candles[last_ticker_time].close = closing_prices.back() = price;
+                    if (price > candles[last_ticker_time].high)
+                        candles[last_ticker_time].high = price;
+                    if (price < candles[last_ticker_time].low)
+                        candles[last_ticker_time].low = price;
+                    // Not keeping track of volume at the moment.
+                    // TODO: use level 2 book to keep track of both volume and price
+                }
             }
-        }, current_product);
+        });
 }
 
 void PriceCharts::update_candle_vector() {
-    min_value = -INFINITY;
+    min_value = static_cast<double>(-INFINITY);
     max_value = INFINITY;
     candles.clear();
     closing_prices.clear();
@@ -57,7 +70,7 @@ void PriceCharts::update_candle_vector() {
         default:
             granularity = boost::posix_time::time_duration(0, 5, 0);
     }
-    auto candles_vec = api->get_latest_historical_candles(current_product, granularity.total_seconds());
+    auto candles_vec = api->get_latest_historical_candles(_current_product, granularity.total_seconds());
     for (std::size_t i = 0; i < candles_vec.size(); i++) {
         candles[candles_vec[i].time] = candles_vec[i];
         closing_prices.push_back(candles_vec[i].close);
@@ -153,7 +166,7 @@ void PriceCharts::display_price_charts_window() {
 }
 
 void PriceCharts::change_product(const std::string &new_product_id) {
-    current_product = new_product_id;
+    _current_product = new_product_id;
     update_candle_vector();
 }
 

@@ -137,7 +137,7 @@ libCTrader::Ticker::Ticker(int trade_id, std::string price, std::string size, st
 libCTrader::Trade::Trade(std::string time, int trade_id, std::string price, std::string size, std::string side) :
     time(std::move(time)), trade_id(trade_id), price(std::move(price)), size(std::move(size)), side(std::move(side)) {}
 
-libCTrader::Candle::Candle(uint64_t time, float low, float high, float open, float close, float volume):
+libCTrader::Candle::Candle(uint64_t time, double low, double high, double open, double close, double volume):
     time(time), low(low), high(high), open(open), close(close), volume(volume) {}
 
 libCTrader::WSTicker::WSTicker(int trade_id, int sequence, std::string time, std::string product_id, std::string price,

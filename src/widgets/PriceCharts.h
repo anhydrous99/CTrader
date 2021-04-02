@@ -20,9 +20,8 @@ class PriceCharts {
     std::vector<double> ema26_prices;
     std::vector<double> volume;
     std::vector<double> times;
-    float max_value = -INFINITY, min_value = INFINITY;
-    libCTrader::connection current_connection;
-    std::string current_product;
+    double max_value = static_cast<double>(-INFINITY), min_value = INFINITY;
+    std::string _current_product;
 
     bool show_EMA12 = false;
     bool show_EMA26 = false;

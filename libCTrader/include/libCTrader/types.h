@@ -204,13 +204,13 @@ namespace libCTrader {
 
     struct Candle {
         uint64_t time;
-        float low;
-        float high;
-        float open;
-        float close;
-        float volume;
+        double low;
+        double high;
+        double open;
+        double close;
+        double volume;
 
-        Candle(uint64_t time, float low, float high, float open, float close, float volume);
+        Candle(uint64_t time, double low, double high, double open, double close, double volume);
         Candle() = default;
     };
 
