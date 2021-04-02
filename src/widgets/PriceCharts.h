@@ -18,10 +18,11 @@ class PriceCharts {
     std::vector<double> closing_prices;
     std::vector<double> ema12_prices;
     std::vector<double> ema26_prices;
-    std::vector<double> volume;
+    std::vector<double> volumes;
     std::vector<double> times;
     double max_value = static_cast<double>(-INFINITY), min_value = INFINITY;
     std::string _current_product;
+    std::shared_mutex grand_mutex;
 
     bool show_EMA12 = false;
     bool show_EMA26 = false;

@@ -17,14 +17,19 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
     websock->on_new_ticker(
         [&](const libCTrader::WSTicker &ticker) {
             if (ticker.product_id == _current_product) {
+                std::unique_lock lock(grand_mutex);
                 double last_ticker_time = times.back();
                 auto current_time = libCTrader::Api::get_timestamp<uint64_t>();
                 double price = std::stod(ticker.price);
+                double volume = std::stod(ticker.last_size);
                 if (current_time - last_ticker_time > granularity.total_seconds()) {
                     // Start new ticker
-                    candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, 0.0);
+                    candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, volume);
                     times.push_back(current_time);
                     closing_prices.push_back(price);
+                    volumes.push_back(volume);
+                    ema12_prices.push_back(2 * (price - ema12_prices.back()) / 13 + ema12_prices.back());
+                    ema26_prices.push_back(2 * (price - ema26_prices.back()) / 27 + ema26_prices.back());
                 } else {
                     // Update current ticker
                     candles[last_ticker_time].close = closing_prices.back() = price;
@@ -32,21 +37,23 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
                         candles[last_ticker_time].high = price;
                     if (price < candles[last_ticker_time].low)
                         candles[last_ticker_time].low = price;
-                    // Not keeping track of volume at the moment.
-                    // TODO: use level 2 book to keep track of both volume and price
+                    volumes.back() += volume;
+                    ema12_prices.back() = 2 * (price - ema12_prices.rbegin()[1]) / 13 + ema12_prices.rbegin()[1];
+                    ema26_prices.back() = 2 * (price - ema26_prices.rbegin()[1]) / 27 + ema26_prices.rbegin()[1];
                 }
             }
         });
 }
 
 void PriceCharts::update_candle_vector() {
+    std::unique_lock lock(grand_mutex);
     min_value = static_cast<double>(-INFINITY);
     max_value = INFINITY;
     candles.clear();
     closing_prices.clear();
     ema12_prices.clear();
     ema26_prices.clear();
-    volume.clear();
+    volumes.clear();
     times.clear();
     switch (local_granularity) {
         case 0:
@@ -74,7 +81,7 @@ void PriceCharts::update_candle_vector() {
     for (std::size_t i = 0; i < candles_vec.size(); i++) {
         candles[candles_vec[i].time] = candles_vec[i];
         closing_prices.push_back(candles_vec[i].close);
-        volume.push_back(candles_vec[i].volume);
+        volumes.push_back(candles_vec[i].volume);
         times.push_back(candles_vec[i].time);
 
         if (i == 0) {
@@ -141,6 +148,7 @@ void PriceCharts::display_price_charts_window() {
 
     ImGui::Spacing();
 
+    std::shared_lock lock(grand_mutex);
     ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first), min_value, max_value);
     if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_RangeFit)) {
         switch (local_graph) {
