@@ -9,41 +9,45 @@
 
 using namespace boost::posix_time;
 
-void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol);
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity,
+                            double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol);
 
-PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api), websock(websock),
-                                                                                                            _current_product(std::move(current_product)) {
+PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std::string current_product) : api(api),
+                                                                                                            websock(websock),
+                                                                                                            _current_product(
+                                                                                                                    std::move(
+                                                                                                                            current_product)) {
     update_candle_vector();
     websock->on_new_ticker(
-        [&](const libCTrader::WSTicker &ticker) {
-            if (ticker.product_id == _current_product) {
-                std::unique_lock lock(grand_mutex);
-                double last_ticker_time = times.back();
-                auto current_time = libCTrader::Api::get_timestamp<uint64_t>();
-                double price = std::stod(ticker.price);
-                double volume = std::stod(ticker.last_size);
-                if (current_time - last_ticker_time > granularity.total_seconds()) {
-                    // Start new ticker
-                    candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, volume);
-                    times.push_back(current_time);
-                    closing_prices.push_back(price);
-                    volumes.push_back(volume);
-                    ema12_prices.push_back(2 * (price - ema12_prices.back()) / 13 + ema12_prices.back());
-                    ema26_prices.push_back(2 * (price - ema26_prices.back()) / 27 + ema26_prices.back());
-                } else {
-                    // Update current ticker
-                    candles[last_ticker_time].close = closing_prices.back() = price;
-                    if (price > candles[last_ticker_time].high)
-                        candles[last_ticker_time].high = price;
-                    if (price < candles[last_ticker_time].low)
-                        candles[last_ticker_time].low = price;
-                    candles[last_ticker_time].volume += volume;
-                    volumes.back() += volume;
-                    ema12_prices.back() = 2 * (price - ema12_prices.rbegin()[1]) / 13 + ema12_prices.rbegin()[1];
-                    ema26_prices.back() = 2 * (price - ema26_prices.rbegin()[1]) / 27 + ema26_prices.rbegin()[1];
+            [&](const libCTrader::WSTicker &ticker) {
+                if (ticker.product_id == _current_product) {
+                    std::unique_lock lock(grand_mutex);
+                    double last_ticker_time = times.back();
+                    auto current_time = libCTrader::Api::get_timestamp<uint64_t>();
+                    double price = std::stod(ticker.price);
+                    double volume = std::stod(ticker.last_size);
+                    if (current_time - last_ticker_time > granularity.total_seconds()) {
+                        // Start new ticker
+                        candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, volume);
+                        times.push_back(current_time);
+                        closing_prices.push_back(price);
+                        volumes.push_back(volume);
+                        ema12_prices.push_back(2 * (price - ema12_prices.back()) / 13 + ema12_prices.back());
+                        ema26_prices.push_back(2 * (price - ema26_prices.back()) / 27 + ema26_prices.back());
+                    } else {
+                        // Update current ticker
+                        candles[last_ticker_time].close = closing_prices.back() = price;
+                        if (price > candles[last_ticker_time].high)
+                            candles[last_ticker_time].high = price;
+                        if (price < candles[last_ticker_time].low)
+                            candles[last_ticker_time].low = price;
+                        candles[last_ticker_time].volume += volume;
+                        volumes.back() += volume;
+                        ema12_prices.back() = 2 * (price - ema12_prices.rbegin()[1]) / 13 + ema12_prices.rbegin()[1];
+                        ema26_prices.back() = 2 * (price - ema26_prices.rbegin()[1]) / 27 + ema26_prices.rbegin()[1];
+                    }
                 }
-            }
-        });
+            });
 }
 
 void PriceCharts::update_candle_vector() {
@@ -81,8 +85,8 @@ void PriceCharts::update_candle_vector() {
     auto candles_vec = api->get_latest_historical_candles(_current_product, granularity.total_seconds());
     std::sort(candles_vec.begin(), candles_vec.end(),
               [](const libCTrader::Candle &a, const libCTrader::Candle &b) {
-        return a.time < b.time;
-    });
+                  return a.time < b.time;
+              });
     for (std::size_t i = 0; i < candles_vec.size(); i++) {
         candles[candles_vec[i].time] = candles_vec[i];
         closing_prices.push_back(candles_vec[i].close);
@@ -110,10 +114,11 @@ void PriceCharts::display_price_charts_window() {
     const static ImVec4 bullCol{0.0f, 1.0f, 0.0f, 1.0f}; // Green
     const static double width_percent = 0.333f;
     static int last_local_granularity = local_granularity;
-    ImGui::SetNextWindowPos(ImVec2(199.f,19.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(866.f,362.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(199.f, 19.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(866.f, 362.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Price Graph", nullptr, ImGuiWindowFlags_MenuBar);
 
+    float window_height = ImGui::GetWindowHeight() - 62;
     // Menu Bar
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Granularity")) {
@@ -154,8 +159,11 @@ void PriceCharts::display_price_charts_window() {
     ImGui::Spacing();
 
     std::shared_lock lock(grand_mutex);
-    ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first), min_value, max_value);
-    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 0), 0, ImPlotAxisFlags_Time, ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_RangeFit)) {
+    ImPlot::SetNextPlotLimits(static_cast<double>(candles.begin()->first), static_cast<double>(candles.rbegin()->first),
+                              min_value, max_value);
+    ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect;
+    if (ImPlot::BeginPlot("Price Charts", "Time", "Price", ImVec2(-1, 2 * window_height / 3), flags,
+                          ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Time, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_RangeFit)) {
         switch (local_graph) {
             case 1:
                 // Plot Line Graph
@@ -175,6 +183,15 @@ void PriceCharts::display_price_charts_window() {
 
         ImPlot::EndPlot();
     }
+    if (fit)
+        ImPlot::FitNextPlotAxes();
+    if (ImPlot::BeginPlot("Volume", "Time", "Volume", ImVec2(-1, window_height / 3), flags,
+                          ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Time, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_RangeFit)) {
+        ImPlot::SetNextFillStyle(ImVec4(1.0f, 0.647f, 0.f, 1.f));
+        ImPlot::PlotBars("", times.data(), volumes.data(), times.size(),
+                         candles.size() > 1 ? static_cast<double>(std::next(candles.begin())->first - candles.begin()->first) * 0.75 : 0.75);
+        ImPlot::EndPlot();
+    }
     ImGui::End();
 }
 
@@ -183,15 +200,20 @@ void PriceCharts::change_product(const std::string &new_product_id) {
     update_candle_vector();
 }
 
-void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity, double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol) {
+void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candles, int local_granularity,
+                            double width_percent, bool fit, const ImVec4 &bullCol, const ImVec4 &bearCol) {
     // Get draw list
-    ImDrawList* draw_list = ImPlot::GetPlotDrawList();
+    ImDrawList *draw_list = ImPlot::GetPlotDrawList();
     // Get current viewport range
     static ImPlotLimits range;
     range = ImPlot::GetPlotLimits();
 
+    ImGui::SetNextWindowPos(ImVec2(199.f, 19.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(866.f, 516.f), ImGuiCond_FirstUseEver);
     if (ImPlot::BeginItem("")) {
-        double half_width = candles.size() > 1 ? static_cast<double>(std::next(candles.begin())->first - candles.begin()->first) * width_percent : width_percent;
+        double half_width =
+                candles.size() > 1 ? static_cast<double>(std::next(candles.begin())->first - candles.begin()->first) *
+                                     width_percent : width_percent;
         ImPlot::GetCurrentItem();
 
         // custom tool
@@ -227,13 +249,14 @@ void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candle
             ImPlot::PopPlotClipRect();
             // find mouse location index
             const auto itr = std::lower_bound(candles.begin(), candles.end(), mouse.x,
-                                              [](const std::pair<uint64_t, libCTrader::Candle>& a, double value) {
+                                              [](const std::pair<uint64_t, libCTrader::Candle> &a, double value) {
                                                   return a.first < value;
                                               });
             if (itr != candles.end()) {
                 ImGui::BeginTooltip();
                 char buff[32];
-                ImPlot::FormatDateTime(ImPlotTime::FromDouble(static_cast<double>(itr->first)), buff, 32, ImPlotDateTimeFmt(ImPlotDateFmt_DayMoYr, ImPlotTimeFmt_HrMin, false, true));
+                ImPlot::FormatDateTime(ImPlotTime::FromDouble(static_cast<double>(itr->first)), buff, 32,
+                                       ImPlotDateTimeFmt(ImPlotDateFmt_DayMoYr, ImPlotTimeFmt_HrMin, false, true));
                 ImGui::Text("D:  %s", buff);
                 ImGui::Text("O: $%.2f", itr->second.open);
                 ImGui::Text("C: $%.2f", itr->second.close);
@@ -266,9 +289,11 @@ void plot_candlestick_graph(const std::map<uint64_t, libCTrader::Candle> &candle
         }
 
         // render data
-        for (const auto& candle_pair : candles) {
-            ImVec2 open_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) - half_width, candle_pair.second.open);
-            ImVec2 close_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) + half_width, candle_pair.second.close);
+        for (const auto &candle_pair : candles) {
+            ImVec2 open_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) - half_width,
+                                                   candle_pair.second.open);
+            ImVec2 close_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first) + half_width,
+                                                    candle_pair.second.close);
             ImVec2 low_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first), candle_pair.second.low);
             ImVec2 high_pos = ImPlot::PlotToPixels(static_cast<double>(candle_pair.first), candle_pair.second.high);
             auto color = ImGui::GetColorU32(candle_pair.second.open > candle_pair.second.close ? bearCol : bullCol);

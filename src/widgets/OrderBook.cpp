@@ -277,11 +277,14 @@ void OrderBook::display_order_histogram_window() {
     price_ss << "Price ";
     price_ss << mid_mark;
 
-    ImGui::SetNextWindowPos(ImVec2(199.f, 380.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(866.f, 342.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(199.f, 534.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(866.f, 186.f), ImGuiCond_FirstUseEver);
     ImGui::Begin("Order Histogram");
+    float window_height = ImGui::GetWindowHeight() - 6;
     ImPlot::SetNextPlotLimits(xmin, xmax, ymin, ymax);
-    if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size")) {
+    ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect;
+    if (ImPlot::BeginPlot("Order Histogram", price_ss.str().c_str(), "Size", ImVec2(-1, window_height - 31), flags,
+                          ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit)) {
         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.5f);
         if (asks_count != 0) {
             ImPlot::SetNextFillStyle(ImVec4(1.0f, 0.0f, 0.0f, 0.5f));
