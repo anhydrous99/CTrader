@@ -37,6 +37,7 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
                         candles[last_ticker_time].high = price;
                     if (price < candles[last_ticker_time].low)
                         candles[last_ticker_time].low = price;
+                    candles[last_ticker_time].volume += volume;
                     volumes.back() += volume;
                     ema12_prices.back() = 2 * (price - ema12_prices.rbegin()[1]) / 13 + ema12_prices.rbegin()[1];
                     ema26_prices.back() = 2 * (price - ema26_prices.rbegin()[1]) / 27 + ema26_prices.rbegin()[1];
@@ -78,6 +79,10 @@ void PriceCharts::update_candle_vector() {
             granularity = boost::posix_time::time_duration(0, 5, 0);
     }
     auto candles_vec = api->get_latest_historical_candles(_current_product, granularity.total_seconds());
+    std::sort(candles_vec.begin(), candles_vec.end(),
+              [](const libCTrader::Candle &a, const libCTrader::Candle &b) {
+        return a.time < b.time;
+    });
     for (std::size_t i = 0; i < candles_vec.size(); i++) {
         candles[candles_vec[i].time] = candles_vec[i];
         closing_prices.push_back(candles_vec[i].close);
