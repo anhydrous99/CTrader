@@ -6,3 +6,4 @@
 #include "widgets/TradeHistory.h"
 #include "widgets/OrderBook.h"
 #include "widgets/PriceCharts.h"
+#include "widgets/Orders.h"

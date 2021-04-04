@@ -164,9 +164,7 @@ double OrderBook::mid_market_price() {
 }
 
 
-bool OrderBook::display_order_book_window() {
-    bool close = false;
-
+void OrderBook::display_order_book_window() {
     if (duration_cast<milliseconds>(high_resolution_clock::now() - last_book_t).count() > 500 || book_first) {
         displayed_bids = get_best_bids(book_count, book_grouping);
         displayed_asks = get_best_asks(book_count, book_grouping);
@@ -213,11 +211,7 @@ bool OrderBook::display_order_book_window() {
     if (ImGui::ArrowButton("##right2", ImGuiDir_Right)) { book_count++; }
     ImGui::SameLine();
     ImGui::Text("Count per side: %i", book_count);
-
-    if (ImGui::Button("Close"))
-        close = true;
     ImGui::End();
-    return close;
 }
 
 void OrderBook::display_order_histogram_window() {

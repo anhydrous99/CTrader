@@ -152,7 +152,7 @@ int main() {
         if (show_trade_history_window)
             tradeHistory.display_trade_history_window();
         if (show_order_book_window)
-            show_order_book_window = !orderBook.display_order_book_window();
+            orderBook.display_order_book_window();
         if (show_order_histogram_window)
             orderBook.display_order_histogram_window();
         if (show_price_charts_window)
