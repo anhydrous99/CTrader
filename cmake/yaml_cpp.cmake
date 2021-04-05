@@ -1,1 +1,7 @@
-CPMAddPackage("gh:jbeder/yaml-cpp#yaml-cpp-0.6.3@0.6.3")
+CPMAddPackage(
+        NAME yaml-cpp
+        GITHUB_REPOSITORY jbeder/yaml-cpp
+        GIT_TAG yaml-cpp-0.6.3
+        OPTIONS
+        "YAML_CPP_BUILD_TESTS OFF"
+)

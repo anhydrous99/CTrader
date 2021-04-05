@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include "Auth.h"
+#include "Client.h"
 #include "types.h"
 
 namespace libCTrader {
@@ -17,32 +18,8 @@ namespace libCTrader {
 
     //! Takes care of communicating with Coinbase Pro REST API
     class Api {
-        //! Our auth class for request signatures
-        Auth *auth;
-        //! The uri of the Coinbase Pro REST API
-        std::string uri;
-
-        /*!
-         * Makes the HTTP/S request to Coinbase Pro's API
-         *
-         * @param method The HTTP method
-         * @param authed Whether we need to create our signature
-         * @param path The HTTP path
-         * @param body The body of our request
-         * @return The request response
-         */
-        std::string call(const std::string &method, bool authed, const std::string &path, const std::string &body);
-
-        /*!
-         * Makes the HTTP/S request to Coinbase Pro's API
-         *
-         * @param method The HTTP method
-         * @param authed Whether we need to create our signature
-         * @param path The HTTP path
-         * @return The request response
-         */
-        std::string call(const std::string &method, bool authed, const std::string &path);
-
+        Client *client = nullptr;
+        bool built_client = false;
         /*!
          * Creates url tags
          *
@@ -53,6 +30,7 @@ namespace libCTrader {
 
     public:
         Api(std::string uri, Auth *auth);
+        explicit Api(Client *client);
         ~Api();
 
         /*!
@@ -259,23 +237,7 @@ namespace libCTrader {
          * @return The 24 stats
          */
         std::string get_24hr_stats(const std::string &product_id);
-
-        /*!
-         * Creates a UNIX Timestamp (number of seconds from Epoch Time)
-         *
-         * @return Our timestamp
-         */
-        template<typename T>
-        static T get_timestamp();
-        static std::string get_timestamp();
     };
-
-    // Template Implementations
-
-    template<typename T>
-    T Api::get_timestamp() {
-        return time(nullptr);
-    }
 }
 
 

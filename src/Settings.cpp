@@ -10,8 +10,8 @@
 
 Settings::Settings() : api("", nullptr), websock("") {
     load();
-    api.set_uri(api_uri);
-    api.set_auth(&auth);
+     api.set_uri(api_uri);
+     api.set_auth(&auth);
     websock.set_uri(ws_uri);
 }
 

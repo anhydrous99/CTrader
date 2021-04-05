@@ -3,12 +3,8 @@
 //
 
 #include "libCTrader/Api.h"
-#include <iostream>
-#include <utility>
-#include <chrono>
 #include <thread>
 #include <stdexcept>
-#include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -18,67 +14,6 @@ auto parse_json(const std::string &input_string) {
     if (ret.count("message") == 1)
         throw std::runtime_error(ret["message"].get<std::string>());
     return ret;
-}
-
-/* Used by API::Call to put websource into a string type */
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-    ((std::string *) userp)->append((char *) contents, size * nmemb);
-    return size * nmemb;
-}
-
-std::string libCTrader::Api::call(const std::string &method, bool authed, const std::string &path, const std::string &body) {
-    if (authed)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    else
-        std::this_thread::sleep_for(std::chrono::milliseconds(167));
-
-    CURL *curl;
-    CURLcode res;
-    std::string readBuffer;
-    curl = curl_easy_init();
-    if (curl) {
-        struct curl_slist *chunk = nullptr;
-        curl_easy_setopt(curl, CURLOPT_URL, (uri + path).c_str());
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str());
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl/7.75.0");
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        chunk = curl_slist_append(chunk, "Content-Type: application/json");
-        if (authed) {
-            std::string time_stamp = get_timestamp();
-            std::string sign = auth->Sign(time_stamp, method, path, body);
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-KEY: " + auth->Key).c_str());
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-SIGN: " + sign).c_str());
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-TIMESTAMP: " + time_stamp).c_str());
-            chunk = curl_slist_append(chunk, ("CB-ACCESS-PASSPHRASE: " + auth->Passphrase).c_str());
-        }
-        res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-        if (method == "POST") {
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, -1L);
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-        res = curl_easy_perform(curl);
-        /* Check for errors */
-        if (res != CURLE_OK)
-            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        /* free the custom headers */
-        curl_slist_free_all(chunk);
-    }
-    return readBuffer;
-}
-
-std::string libCTrader::Api::call(const std::string &method, bool authed, const std::string &path) {
-    return call(method, authed, path, "");
-}
-
-std::string libCTrader::Api::get_timestamp() {
-    time_t t = time(nullptr);
-    return std::to_string(t);
 }
 
 std::string libCTrader::Api::build_url_args(const std::map<std::string, std::string> &args) {
@@ -96,16 +31,20 @@ std::string libCTrader::Api::build_url_args(const std::map<std::string, std::str
     return output;
 }
 
-libCTrader::Api::Api(std::string uri, Auth *auth): uri(std::move(uri)), auth(auth) {
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+libCTrader::Api::Api(std::string uri, Auth *auth) {
+    client = new Client(auth, uri);
+    built_client = true;
 }
 
+libCTrader::Api::Api(Client *client) : client(client) {}
+
 libCTrader::Api::~Api() {
-    curl_global_cleanup();
+    if (built_client)
+        delete client;
 }
 
 std::vector<libCTrader::Account> libCTrader::Api::accounts() {
-    auto j = parse_json(call("GET", true, "/accounts"));
+    auto j = parse_json(client->call("GET", true, "/accounts"));
     std::vector<Account> accounts;
     for (const auto& acc : j) {
         accounts.emplace_back(
@@ -120,16 +59,8 @@ std::vector<libCTrader::Account> libCTrader::Api::accounts() {
     return accounts;
 }
 
-void libCTrader::Api::set_auth(libCTrader::Auth *au) {
-    auth = au;
-}
-
-void libCTrader::Api::set_uri(std::string u) {
-    uri = std::move(u);
-}
-
 libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
-    auto j = parse_json(call("GET", true, "/accounts/" + account_id));
+    auto j = parse_json(client->call("GET", true, "/accounts/" + account_id));
     return Account(j["id"].get<std::string>(),
                    j["currency"].get<std::string>(),
                    j["balance"].get<std::string>(),
@@ -140,7 +71,7 @@ libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
 }
 
 std::vector<libCTrader::Account_Ledger_Entry> libCTrader::Api::account_ledger(const std::string &account_id) {
-    auto j = parse_json(call("GET", true, "/accounts/" + account_id + "/ledger"));
+    auto j = parse_json(client->call("GET", true, "/accounts/" + account_id + "/ledger"));
     std::vector<Account_Ledger_Entry> ledger;
     for (const auto& j_e : j) {
         ledger.emplace_back(
@@ -154,7 +85,7 @@ std::vector<libCTrader::Account_Ledger_Entry> libCTrader::Api::account_ledger(co
 }
 
 std::string libCTrader::Api::account_holds(const std::string &account_id) {
-    auto j = parse_json(call("GET", true, "/accounts/" + account_id + "/holds"));
+    auto j = parse_json(client->call("GET", true, "/accounts/" + account_id + "/holds"));
     return j.dump(2);
 }
 
@@ -172,7 +103,7 @@ libCTrader::Api::place_market_order(const std::string &product_id, const std::st
             o["funds"] = funds;
     } else
         throw std::runtime_error("Either size or funds must be set.");
-    auto j = parse_json(call("POST", true, "/orders", o.dump()));
+    auto j = parse_json(client->call("POST", true, "/orders", o.dump()));
     return {
         j["id"],
         j.count("price") == 0 ?  "" : j["price"],
@@ -204,7 +135,7 @@ libCTrader::Api::place_limit_order(const std::string &product_id, const std::str
     o["price"] = price;
     o["size"] = size;
     o["post_only"] = true;
-    auto j = parse_json(call("POST", true, "/orders", o.dump()));
+    auto j = parse_json(client->call("POST", true, "/orders", o.dump()));
     return {
             j["id"],
             j.count("price") == 0 ?  "" : j["price"],
@@ -241,7 +172,7 @@ libCTrader::Api::place_stop_order(const std::string &product_id, const std::stri
             o["funds"] = funds;
     } else
         throw std::runtime_error("Either size or funds must be set.");
-    auto j = parse_json(call("POST", true, "/orders", o.dump()));
+    auto j = parse_json(client->call("POST", true, "/orders", o.dump()));
     return {
             j["id"],
             j.count("price") == 0 ?  "" : j["price"],
@@ -267,7 +198,7 @@ void libCTrader::Api::cancel_all_orders(const std::string *product_id) {
     std::string path = "/orders";
     if (product_id != nullptr)
         path += "?product_id" + *product_id;
-    call("DELETE", true, path);
+    client->call("DELETE", true, path);
 }
 
 std::vector<libCTrader::Order> libCTrader::Api::list_orders(const std::string *status, const std::string *product_id) {
@@ -278,7 +209,7 @@ std::vector<libCTrader::Order> libCTrader::Api::list_orders(const std::string *s
     if (product_id != nullptr)
         args["product_id"] = *product_id;
     path += build_url_args(args);
-    auto json = parse_json(call("GET", true, path));
+    auto json = parse_json(client->call("GET", true, path));
 
     std::vector<Order> output;
     for (const auto& j : json) {
@@ -306,7 +237,7 @@ std::vector<libCTrader::Order> libCTrader::Api::list_orders(const std::string *s
 }
 
 libCTrader::Order libCTrader::Api::get_order(const std::string &order_id) {
-    auto j = parse_json(call("GET", true, "/orders/" + order_id));
+    auto j = parse_json(client->call("GET", true, "/orders/" + order_id));
     return {
             j["id"],
             j.count("price") == 0 ?  "" : j["price"],
@@ -335,7 +266,7 @@ std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *ord
     if (product_id != nullptr)
         args["product_id"] = *product_id;
     std::string path = "/fills" + build_url_args(args);
-    auto json = parse_json(call("GET", true, path));
+    auto json = parse_json(client->call("GET", true, path));
     std::vector<Fill> fills;
     for (const auto& j : json) {
         fills.emplace_back(
@@ -354,11 +285,11 @@ std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *ord
 }
 
 std::string libCTrader::Api::exchange_limits() {
-    return call("GET", true, "/users/self/exchange-limits");
+    return client->call("GET", true, "/users/self/exchange-limits");
 }
 
 std::vector<libCTrader::Product> libCTrader::Api::get_products() {
-    json json1 = parse_json(call("GET", false, "/products"));
+    json json1 = parse_json(client->call("GET", false, "/products"));
     std::vector<Product> products;
     for (const auto& j : json1) {
         products.emplace_back(
@@ -385,7 +316,7 @@ std::vector<libCTrader::Product> libCTrader::Api::get_products() {
 }
 
 libCTrader::Product libCTrader::Api::get_product(const std::string &product_id) {
-    json j = parse_json(call("GET", false, "/products/" + product_id));
+    json j = parse_json(client->call("GET", false, "/products/" + product_id));
     return {
             j["id"],
             j["display_name"],
@@ -407,7 +338,7 @@ libCTrader::Product libCTrader::Api::get_product(const std::string &product_id) 
 }
 
 std::map<std::string, libCTrader::Page> libCTrader::Api::get_order_book(const std::string &product_id, int level) {
-    json j = parse_json(call("GET", false,
+    json j = parse_json(client->call("GET", false,
                               "/products/" + product_id + "/book?level=" + std::to_string(level)));
     std::map<std::string, Page> output;
     auto bids = j["bids"];
@@ -421,7 +352,7 @@ std::map<std::string, libCTrader::Page> libCTrader::Api::get_order_book(const st
 }
 
 std::map<std::string, libCTrader::PageLVL3> libCTrader::Api::get_lvl3_order_book(const std::string &product_id) {
-    json j = parse_json(call("GET", false,
+    json j = parse_json(client->call("GET", false,
                               "/products/" + product_id + "/book?level=3"));
     std::map<std::string, PageLVL3> output;
     auto bids = j["bids"];
@@ -434,7 +365,7 @@ std::map<std::string, libCTrader::PageLVL3> libCTrader::Api::get_lvl3_order_book
 }
 
 libCTrader::Ticker libCTrader::Api::get_product_ticker(const std::string &product_id) {
-    json j = parse_json(call("GET", false, "/products/" + product_id + "/ticker"));
+    json j = parse_json(client->call("GET", false, "/products/" + product_id + "/ticker"));
     return {
         j["trade_id"],
         j["price"],
@@ -447,7 +378,7 @@ libCTrader::Ticker libCTrader::Api::get_product_ticker(const std::string &produc
 }
 
 std::vector<libCTrader::Trade> libCTrader::Api::list_latest_trades(const std::string &product_id) {
-    json json1 = parse_json(call("GET", false, "/products" + product_id + "/products"));
+    json json1 = parse_json(client->call("GET", false, "/products" + product_id + "/products"));
     std::vector<Trade> output;
     for (const auto& j : json1) {
         output.emplace_back(
@@ -466,7 +397,7 @@ libCTrader::Api::get_historical_candles(const std::string &product_id, const std
                                       int granularity) {
     std::string path = "/products/" + product_id + "/candles?start=" + start + "&end=" + end + "&granularity=" +
             std::to_string(granularity);
-    json json1 = parse_json(call("GET", false, path));
+    json json1 = parse_json(client->call("GET", false, path));
     std::vector<Candle> candles;
     for (const auto& j : json1)
         candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
@@ -480,13 +411,21 @@ libCTrader::Api::get_historical_candles(const std::string &product_id, const pti
 }
 
 std::string libCTrader::Api::get_24hr_stats(const std::string &product_id) {
-    return call("GET", false, "/products/" + product_id + "/stats");
+    return client->call("GET", false, "/products/" + product_id + "/stats");
 }
 
 std::vector<libCTrader::Candle> libCTrader::Api::get_latest_historical_candles(const std::string &product_id, int granularity) {
-    json json1 = parse_json(call("GET", false, "/products/" + product_id + "/candles?granularity=" + std::to_string(granularity)));
+    json json1 = parse_json(client->call("GET", false, "/products/" + product_id + "/candles?granularity=" + std::to_string(granularity)));
     std::vector<Candle> candles;
     for (const auto& j : json1)
         candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
     return candles;
+}
+
+void libCTrader::Api::set_auth(libCTrader::Auth *au) {
+    client->set_auth(au);
+}
+
+void libCTrader::Api::set_uri(std::string u) {
+    client->set_uri(std::move(u));
 }

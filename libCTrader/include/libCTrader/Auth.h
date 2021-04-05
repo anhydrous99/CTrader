@@ -8,8 +8,22 @@
 #include <string>
 
 namespace libCTrader {
+    struct IAuth {
+        [[nodiscard]] virtual std::string Sign(const std::string&, const std::string&, const std::string&,const std::string&) const = 0;
+        [[nodiscard]] virtual std::string Sign(const std::string &, const std::string &, const std::string&) const = 0;
+        virtual ~IAuth() = default;
+    };
+
     //! Take care of our authentication
-    class Auth {
+    class Auth : IAuth {
+    public:
+        //! This is the API key
+        std::string Key;
+        //! This is the provided secret
+        std::string Secret;
+        //! This is your passphrase
+        std::string Passphrase;
+
         /*!
          * Decodes a base-64 string
          *
@@ -26,14 +40,6 @@ namespace libCTrader {
          */
         static std::string b64_encode(const std::string &input);
 
-    public:
-        //! This is the API key
-        std::string Key;
-        //! This is the provided secret
-        std::string Secret;
-        //! This is your passphrase
-        std::string Passphrase;
-
         /*!
          * Creates an HMAC SHA256 Signature for coinbase pro's REST API
          *
@@ -45,7 +51,7 @@ namespace libCTrader {
          */
         [[nodiscard]] std::string
         Sign(const std::string &time_stamp, const std::string &method, const std::string &path,
-             const std::string &body) const;
+             const std::string &body) const override;
 
         /*!
          * Creates an HMAC SHA256 Signature for coinbase pro's REST API
@@ -56,7 +62,7 @@ namespace libCTrader {
          * @return The HMAC SHA256 Signature
          */
         [[nodiscard]] std::string
-        Sign(const std::string &time_stamp, const std::string &method, const std::string &path) const;
+        Sign(const std::string &time_stamp, const std::string &method, const std::string &path) const override;
 
         Auth() = default;
 

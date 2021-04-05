@@ -23,7 +23,7 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
                 if (ticker.product_id == _current_product) {
                     std::unique_lock lock(grand_mutex);
                     double last_ticker_time = times.back();
-                    auto current_time = libCTrader::Api::get_timestamp<uint64_t>();
+                    auto current_time = libCTrader::Client::get_timestamp<uint64_t>();
                     double price = std::stod(ticker.price);
                     double volume = std::stod(ticker.last_size);
                     if (current_time - last_ticker_time > granularity.total_seconds()) {

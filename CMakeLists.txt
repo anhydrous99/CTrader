@@ -3,6 +3,8 @@ project(CTrader)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(BUILD_TESTS "Build the tests" ON)
+
 # Get CPM & CPM packages
 set(CPM_DOWNLOAD_VERSION 0.31.1)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
@@ -29,7 +31,12 @@ if (WIN32)
     find_package(CURL REQUIRED)
 endif ()
 
-add_library(libCTrader libCTrader/src/Api.cpp libCTrader/src/Auth.cpp libCTrader/src/types.cpp libCTrader/src/Websock.cpp)
+add_library(libCTrader
+        libCTrader/src/Api.cpp
+        libCTrader/src/Auth.cpp
+        libCTrader/src/types.cpp
+        libCTrader/src/Websock.cpp
+        libCTrader/src/Client.cpp)
 target_include_directories(libCTrader PUBLIC libCTrader/include)
 target_link_libraries(libCTrader cpprestsdk::cpprest OpenSSL::SSL OpenSSL::Crypto Boost::boost nlohmann_json)
 if (NOT WIN32)
@@ -85,3 +92,9 @@ add_executable(CTrader
         ${ImPlot})
 target_link_libraries(CTrader OpenGL::GL glfw libglew_static yaml-cpp libCTrader)
 configure_file(${CMAKE_SOURCE_DIR}/settings.yaml ${CMAKE_BINARY_DIR}/settings.yaml COPYONLY)
+
+if (BUILD_TESTS)
+    include(cmake/googletest.cmake)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()
