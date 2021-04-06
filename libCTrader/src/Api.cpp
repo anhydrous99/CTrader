@@ -47,39 +47,39 @@ std::vector<libCTrader::Account> libCTrader::Api::accounts() {
     auto j = parse_json(client->call("GET", true, "/accounts"));
     std::vector<Account> accounts;
     for (const auto& acc : j) {
-        accounts.emplace_back(
+        accounts.push_back(Account{
                 acc["id"].get<std::string>(),
                 acc["currency"].get<std::string>(),
                 acc["balance"].get<std::string>(),
                 acc["available"].get<std::string>(),
                 acc["hold"].get<std::string>(),
                 acc["profile_id"].get<std::string>(),
-                acc["trading_enabled"].get<bool>());
+                acc["trading_enabled"].get<bool>()});
     }
     return accounts;
 }
 
 libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
     auto j = parse_json(client->call("GET", true, "/accounts/" + account_id));
-    return Account(j["id"].get<std::string>(),
+    return Account{j["id"].get<std::string>(),
                    j["currency"].get<std::string>(),
                    j["balance"].get<std::string>(),
                    j["available"].get<std::string>(),
                    j["holds"].get<std::string>(),
                    "",
-                   true);
+                   true};
 }
 
 std::vector<libCTrader::Account_Ledger_Entry> libCTrader::Api::account_ledger(const std::string &account_id) {
     auto j = parse_json(client->call("GET", true, "/accounts/" + account_id + "/ledger"));
     std::vector<Account_Ledger_Entry> ledger;
     for (const auto& j_e : j) {
-        ledger.emplace_back(
+        ledger.push_back({
                 j_e["id"],
                 j_e["created_at"],
                 j_e["amount"],
                 j_e["balance"],
-                j_e["type"]);
+                j_e["type"]});
     }
     return ledger;
 }
@@ -213,25 +213,25 @@ std::vector<libCTrader::Order> libCTrader::Api::list_orders(const std::string *s
 
     std::vector<Order> output;
     for (const auto& j : json) {
-        output.emplace_back(
-                j["id"],
-                j.count("price") == 0 ?  "" : j["price"],
-                j.count("size") == 0 ? "" : j["size"],
-                j["product_id"],
-                j["side"],
-                j["stp"],
-                j.count("funds") == 0 ? "" : j["funds"],
-                j.count("specific_funds") == 0 ? "" : j["specific_funds"],
-                j["type"],
-                j["time_in_force"],
-                j["post_only"],
-                j["created_at"],
-                j.count("fill_fees") == 0 ? "" : j["fill_fees"],
-                j.count("fill_size") == 0 ? "" : j["fill_size"],
-                j.count("executed_value") == 0 ? "" : j["executed_value"],
-                j["status"],
-                j["settled"]
-                );
+        output.push_back({
+                                 j["id"],
+                                 j.count("price") == 0 ? "" : j["price"],
+                                 j.count("size") == 0 ? "" : j["size"],
+                                 j["product_id"],
+                                 j["side"],
+                                 j["stp"],
+                                 j.count("funds") == 0 ? "" : j["funds"],
+                                 j.count("specific_funds") == 0 ? "" : j["specific_funds"],
+                                 j["type"],
+                                 j["time_in_force"],
+                                 j["post_only"],
+                                 j["created_at"],
+                                 j.count("fill_fees") == 0 ? "" : j["fill_fees"],
+                                 j.count("fill_size") == 0 ? "" : j["fill_size"],
+                                 j.count("executed_value") == 0 ? "" : j["executed_value"],
+                                 j["status"],
+                                 j["settled"]
+                         });
     }
     return output;
 }
@@ -269,7 +269,7 @@ std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *ord
     auto json = parse_json(client->call("GET", true, path));
     std::vector<Fill> fills;
     for (const auto& j : json) {
-        fills.emplace_back(
+        fills.push_back({
                 j["trade_id"],
                 j["product_id"],
                 j["price"],
@@ -279,7 +279,7 @@ std::vector<libCTrader::Fill> libCTrader::Api::list_fills(const std::string *ord
                 j["liquidity"],
                 j["fee"],
                 j["settled"],
-                j["side"]);
+                j["side"]});
     }
     return fills;
 }
@@ -292,24 +292,24 @@ std::vector<libCTrader::Product> libCTrader::Api::get_products() {
     json json1 = parse_json(client->call("GET", false, "/products"));
     std::vector<Product> products;
     for (const auto& j : json1) {
-        products.emplace_back(
-                j["id"],
-                j["display_name"],
-                j["base_currency"],
-                j["quote_currency"],
-                j["base_increment"],
-                j["quote_increment"],
-                j["base_min_size"],
-                j["base_max_size"],
-                j["min_market_funds"],
-                j["max_market_funds"],
-                j["status"],
-                j["status_message"],
-                j["cancel_only"],
-                j["limit_only"],
-                j["post_only"],
-                j["trading_disabled"]
-                );
+        products.push_back({
+                                   j["id"],
+                                   j["display_name"],
+                                   j["base_currency"],
+                                   j["quote_currency"],
+                                   j["base_increment"],
+                                   j["quote_increment"],
+                                   j["base_min_size"],
+                                   j["base_max_size"],
+                                   j["min_market_funds"],
+                                   j["max_market_funds"],
+                                   j["status"],
+                                   j["status_message"],
+                                   j["cancel_only"],
+                                   j["limit_only"],
+                                   j["post_only"],
+                                   j["trading_disabled"]
+                           });
     }
     std::sort(products.begin(), products.end());
     return products;
@@ -381,13 +381,13 @@ std::vector<libCTrader::Trade> libCTrader::Api::list_latest_trades(const std::st
     json json1 = parse_json(client->call("GET", false, "/products/" + product_id + "/trades"));
     std::vector<Trade> output;
     for (const auto& j : json1) {
-        output.emplace_back(
-                j["time"],
-                j["trade_id"],
-                j["price"],
-                j["size"],
-                j["side"]
-                );
+        output.push_back({
+                                 j["time"],
+                                 j["trade_id"],
+                                 j["price"],
+                                 j["size"],
+                                 j["side"]
+                         });
     }
     return output;
 }
@@ -400,7 +400,7 @@ libCTrader::Api::get_historical_candles(const std::string &product_id, const std
     json json1 = parse_json(client->call("GET", false, path));
     std::vector<Candle> candles;
     for (const auto& j : json1)
-        candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
+        candles.push_back({j[0], j[1], j[2], j[3], j[4], j[5]});
     return candles;
 }
 
@@ -418,7 +418,7 @@ std::vector<libCTrader::Candle> libCTrader::Api::get_latest_historical_candles(c
     json json1 = parse_json(client->call("GET", false, "/products/" + product_id + "/candles?granularity=" + std::to_string(granularity)));
     std::vector<Candle> candles;
     for (const auto& j : json1)
-        candles.emplace_back(j[0], j[1], j[2], j[3], j[4], j[5]);
+        candles.push_back({j[0], j[1], j[2], j[3], j[4], j[5]});
     return candles;
 }
 

@@ -28,7 +28,7 @@ PriceCharts::PriceCharts(libCTrader::Api *api, libCTrader::Websock *websock, std
                     double volume = std::stod(ticker.last_size);
                     if (current_time - last_ticker_time > granularity.total_seconds()) {
                         // Start new ticker
-                        candles[current_time] = libCTrader::Candle(current_time, price, price, price, price, volume);
+                        candles[current_time] = {current_time, price, price, price, price, volume};
                         times.push_back(current_time);
                         closing_prices.push_back(price);
                         volumes.push_back(volume);
