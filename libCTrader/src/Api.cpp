@@ -65,7 +65,7 @@ libCTrader::Account libCTrader::Api::account(const std::string& account_id) {
                    j["currency"].get<std::string>(),
                    j["balance"].get<std::string>(),
                    j["available"].get<std::string>(),
-                   j["hold"].get<std::string>(),
+                   j["holds"].get<std::string>(),
                    "",
                    true);
 }
@@ -118,7 +118,7 @@ libCTrader::Api::place_market_order(const std::string &product_id, const std::st
         j["post_only"],
         j["created_at"],
         j.count("fill_fees") == 0 ? "" : j["fill_fees"],
-        j.count("fill_size") == 0 ? "" : j["fill_size"],
+        j.count("filled_size") == 0 ? "" : j["filled_size"],
         j.count("executed_value") == 0 ? "" : j["executed_value"],
         j["status"],
         j["settled"]
@@ -248,11 +248,11 @@ libCTrader::Order libCTrader::Api::get_order(const std::string &order_id) {
             j.count("funds") == 0 ? "" : j["funds"],
             j.count("specific_funds") == 0 ? "" : j["specific_funds"],
             j["type"],
-            j["time_in_force"],
+            j.count("time_in_force") == 0 ? "" : j["time_in_force"],
             j["post_only"],
             j["created_at"],
             j.count("fill_fees") == 0 ? "" : j["fill_fees"],
-            j.count("fill_size") == 0 ? "" : j["fill_size"],
+            j.count("filled_size") == 0 ? "" : j["filled_size"],
             j.count("executed_value") == 0 ? "" : j["executed_value"],
             j["status"],
             j["settled"]
@@ -378,7 +378,7 @@ libCTrader::Ticker libCTrader::Api::get_product_ticker(const std::string &produc
 }
 
 std::vector<libCTrader::Trade> libCTrader::Api::list_latest_trades(const std::string &product_id) {
-    json json1 = parse_json(client->call("GET", false, "/products" + product_id + "/products"));
+    json json1 = parse_json(client->call("GET", false, "/products/" + product_id + "/trades"));
     std::vector<Trade> output;
     for (const auto& j : json1) {
         output.emplace_back(
