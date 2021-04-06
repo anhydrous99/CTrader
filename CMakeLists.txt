@@ -3,7 +3,7 @@ project(CTrader)
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(BUILD_TESTS "Build the tests" ON)
+option(BUILD_TESTS "Build the tests" OFF)
 
 # Get CPM & CPM packages
 set(CPM_DOWNLOAD_VERSION 0.31.1)
