@@ -4,7 +4,7 @@
     <img src="images/CTrader.png">
 </div>
 
-CTrader is a personal project that resulted from the fact that coinbase pro's web interface 
+CTrader is a personal project, Coinbase Pro trading app, that resulted from the fact that coinbase pro's web interface 
 uses a massive amount of CPU resources. I thought I would try my hand at creating a feature
 parity application. 
 
