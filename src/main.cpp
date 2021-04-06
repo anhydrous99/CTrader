@@ -28,7 +28,7 @@ int main() {
     // Connect websocket to starting product
     websock->add_channel_product_pair("ticker", current_product, 0);
     websock->add_channel_product_pair("level2", current_product, 2);
-    websock->Connect();
+    // websock->Connect();
 
     // Create WatchList class
     WatchList watchList(websock, products, {current_product});
@@ -41,6 +41,9 @@ int main() {
 
     // Create PriceCharts class
     PriceCharts priceGraph(api, websock, current_product.id);
+
+    // Create Orders class
+    Orders orders(api);
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -88,6 +91,7 @@ int main() {
     bool show_order_book_window = false;
     bool show_order_histogram_window = false;
     bool show_price_charts_window = false;
+    bool show_orders_window = false;
 
     bool new_product_selected = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -103,6 +107,7 @@ int main() {
         // Create top menu
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("View")) {
+                ImGui::Checkbox("Orders", & show_orders_window);
                 ImGui::Checkbox("Price Graph", & show_price_charts_window);
                 ImGui::Checkbox("Order Histogram", & show_order_histogram_window);
                 ImGui::Checkbox("Order Book", & show_order_book_window);
@@ -157,6 +162,8 @@ int main() {
             orderBook.display_order_histogram_window();
         if (show_price_charts_window)
             priceGraph.display_price_charts_window();
+        if (show_orders_window)
+            orders.display_orders_window();
 
         // Rendering
         ImGui::Render();
@@ -171,7 +178,7 @@ int main() {
     }
 
     // Cleanup
-    websock->Disconnect();
+    // websock->Disconnect();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();
