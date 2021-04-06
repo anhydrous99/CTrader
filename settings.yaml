@@ -3,6 +3,6 @@ Servers:
   Websocket Feed: wss://ws-feed-public.sandbox.pro.coinbase.com
   Fix API: tcp+ssl://fix-public.sandbox.pro.coinbase.com:4198
 Authentication:
-  Key: 82669bdd1ed1d2298272b8471d5bc217
-  Secret: X7uT7zkpjgyZH+Esn4RM1z5Y2mlqLPR7uhsLA3vIe8iXaclQ4wpuAuVyNzpb8mwWQQPxiTBhin5CkB2WEFvqug==
-  Passphrase: olg5wzg5cva
+  Key: Your key
+  Secret: Your secret
+  Passphrase: Your passphrase
